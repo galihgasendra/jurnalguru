@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rapor Siswa - Presensi, Jurnal &amp; Nilai</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+#gxapp{--p:#0f766e;--p2:#14b8a6;--pd:#0b4f4a;--bg:#f1f5f4;--card:#fff;--tx:#10201e;--mu:#5b6e6b;--bd:#dbe5e3;--er:#FF615B;--ok:#16a34a;--wa:#d97706;font-family:'Plus Jakarta Sans',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--tx);background:var(--bg);min-height:100vh;font-size:14px;line-height:1.45;position:relative}
+#gxapp *{box-sizing:border-box}
+#gxapp button,#gxapp input,#gxapp select,#gxapp textarea{font:inherit;color:inherit}
+#gxapp .gx-top{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:10px;padding:10px 14px;background:linear-gradient(120deg,var(--pd),var(--p));color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15)}
+#gxapp .gx-top h1{font-size:16px;margin:0;font-weight:800;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#gxapp .gx-ham{background:rgba(255,255,255,.15);border:0;color:#fff;width:38px;height:38px;border-radius:10px;font-size:20px;cursor:pointer;display:none}
+#gxapp .gx-st{font-size:11px;padding:4px 9px;border-radius:99px;background:rgba(255,255,255,.18);white-space:nowrap}
+#gxapp .gx-st.on{background:#22c55e}#gxapp .gx-st.off{background:#ef4444}#gxapp .gx-st.pd{background:#f59e0b}
+#gxapp .gx-wrap{display:flex}
+#gxapp .gx-side{width:240px;flex:0 0 240px;background:var(--card);border-right:1px solid var(--bd);min-height:calc(100vh - 58px);padding:12px 10px;position:sticky;top:58px;align-self:flex-start;max-height:calc(100vh - 58px);overflow:auto}
+#gxapp .gx-user{padding:10px;border-radius:12px;background:var(--bg);margin-bottom:10px}
+#gxapp .gx-user b{display:block}#gxapp .gx-user small{color:var(--mu)}
+#gxapp .gx-nav a{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;color:var(--tx);text-decoration:none;cursor:pointer;font-weight:600;margin-bottom:2px}
+#gxapp .gx-nav a:hover{background:var(--bg)}
+#gxapp .gx-nav a.act{background:var(--p);color:#fff}
+#gxapp .gx-nav .sec{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--mu);margin:12px 12px 4px}
+#gxapp .gx-main{flex:1;min-width:0;padding:16px;max-width:1200px}
+#gxapp .gx-card{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:16px;margin-bottom:14px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+#gxapp .gx-card h2{margin:0 0 12px;font-size:18px;font-weight:800;color:var(--pd)}
+#gxapp .gx-card h3{margin:4px 0 10px;font-size:15px}
+#gxapp .gx-g{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px}
+#gxapp label.gx-f{display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:600;color:var(--mu)}
+#gxapp .gx-in{width:100%;padding:9px 11px;border:1px solid var(--bd);border-radius:10px;background:#fff;outline:none;min-height:40px}
+#gxapp .gx-in:focus{border-color:var(--p2);box-shadow:0 0 0 3px rgba(20,184,166,.18)}
+#gxapp textarea.gx-in{min-height:80px;resize:vertical}
+#gxapp .gx-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+#gxapp .gx-b{border:0;border-radius:10px;padding:9px 14px;font-weight:700;cursor:pointer;background:var(--p);color:#fff;min-height:40px;display:inline-flex;align-items:center;gap:6px}
+#gxapp .gx-b:hover{filter:brightness(1.08)}
+#gxapp .gx-b.s{background:#e2ecea;color:var(--pd)}
+#gxapp .gx-b.r{background:var(--er)}#gxapp .gx-b.w{background:var(--wa)}#gxapp .gx-b.g{background:var(--ok)}
+#gxapp .gx-b.sm{padding:5px 9px;min-height:30px;font-size:12px;border-radius:8px}
+#gxapp .gx-tw{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--bd);border-radius:12px;margin-top:12px}
+#gxapp table.gx-t{border-collapse:collapse;width:100%;min-width:520px;background:#fff}
+#gxapp .gx-t th{background:#e6f2f0;color:var(--pd);text-align:left;font-size:12px;padding:9px 8px;position:sticky;top:0;white-space:nowrap}
+#gxapp .gx-t td{border-top:1px solid var(--bd);padding:7px 8px;vertical-align:middle}
+#gxapp .gx-t tr:nth-child(even) td{background:#fafcfc}
+#gxapp .gx-t .gx-in{min-height:34px;padding:5px 8px}
+#gxapp .gx-t input.num{width:72px}
+#gxapp .gx-chk{display:inline-flex;gap:10px}
+#gxapp .gx-chk label{display:inline-flex;align-items:center;gap:3px;font-weight:700;font-size:12px}
+#gxapp .gx-chk input{width:20px;height:20px;accent-color:var(--p)}
+#gxapp .gx-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-top:12px}
+#gxapp .gx-stat{background:linear-gradient(135deg,#ecfdf5,#e0f2f1);border-radius:12px;padding:10px 12px}
+#gxapp .gx-stat small{display:block;color:var(--mu);font-size:11px;font-weight:600}
+#gxapp .gx-stat b{font-size:20px;color:var(--pd)}
+#gxapp .gx-tag{display:inline-block;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:700}
+#gxapp .gx-tag.ok{background:#dcfce7;color:#166534}#gxapp .gx-tag.no{background:#fee2e2;color:#991b1b}
+#gxapp .gx-muted{color:var(--mu);font-size:12px}
+#gxapp .gx-login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:18px;background:radial-gradient(circle at 20% 10%,#5eead4 0,transparent 40%),linear-gradient(150deg,var(--pd),var(--p))}
+#gxapp .gx-lbox{background:#fff;width:100%;max-width:400px;border-radius:22px;padding:24px;box-shadow:0 20px 50px rgba(0,0,0,.25)}
+#gxapp .gx-lbox h2{margin:0;font-size:22px;color:var(--pd);font-weight:800}
+#gxapp .gx-lbox .gx-f{margin-top:12px}
+#gxapp .gx-lbox .gx-b{width:100%;justify-content:center;margin-top:14px}
+#gxapp .gx-ov{display:none}
+#gxapp .gx-toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#10201e;color:#fff;padding:10px 16px;border-radius:12px;z-index:99;font-weight:600;box-shadow:0 8px 20px rgba(0,0,0,.3);max-width:90vw}
+#gxapp .gx-toast.err{background:var(--er)}#gxapp .gx-toast.ok{background:var(--ok)}
+#gxapp .gx-dash{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+#gxapp .gx-dash .gx-stat b{font-size:26px}
+#gxapp .gx-print{background:#fff}
+#gxapp .gx-rp{background:#fff;color:#000;padding:22px;border:1px solid var(--bd);margin:12px 0;font-family:'Times New Roman',serif;font-size:13px}
+#gxapp .gx-rp .kop{text-align:center;border-bottom:3px double #000;padding-bottom:8px;margin-bottom:10px}
+#gxapp .gx-rp .kop b{font-size:18px;display:block}
+#gxapp .gx-rp table{border-collapse:collapse;width:100%}
+#gxapp .gx-rp .bt td,#gxapp .gx-rp .bt th{border:1px solid #000;padding:5px 6px}
+#gxapp .gx-rp .bt th{background:#eee}
+#gxapp .gx-rp .idt td{padding:2px 4px}
+#gxapp .gx-rp .ttd{display:flex;justify-content:space-between;margin-top:26px;text-align:center}
+#gxapp .gx-rp .ttd div{width:45%}
+#gxapp .gx-rp .ttd .sp{height:64px}
+#glhgsd{position:fixed;right:10px;bottom:10px;z-index:9999;background:linear-gradient(135deg,#0f766e,#14b8a6);color:#fff;font:700 13px 'Plus Jakarta Sans',sans-serif;padding:7px 13px;border-radius:99px;box-shadow:0 6px 18px rgba(0,0,0,.3);opacity:.95;pointer-events:none;letter-spacing:.02em}
+#gxapp .gx-report-bottom{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-top:10px;align-items:start}
+#gxapp [aria-invalid="true"]{border-color:var(--er)}
+#gxapp .gx-leger-wrap{overflow-x:auto}
+#gxapp .gx-leger{min-width:1000px}
+#gxapp .gx-leger th{font-size:11px}
+#gxapp .gx-leger td{font-size:12px}
+#gxapp .gx-leger .bt thead{display:table-header-group}
+#gxapp .gx-leger .bt tr{break-inside:avoid}
+#gxapp .gx-legend{margin-top:12px;font-size:11px}
+@page gxleger{size:A4 landscape;margin:8mm}
+@media(max-width:860px){
+#gxapp .gx-ham{display:block}
+#gxapp .gx-side{position:fixed;left:0;top:0;bottom:0;z-index:50;max-height:none;height:100vh;transform:translateX(-105%);transition:transform .25s;box-shadow:4px 0 20px rgba(0,0,0,.2)}
+#gxapp .gx-side.open{transform:none}
+#gxapp .gx-ov.open{display:block;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:40}
+#gxapp .gx-main{padding:10px}
+#gxapp .gx-card{padding:12px;border-radius:14px}
+#gxapp .gx-g{grid-template-columns:1fr 1fr}
+#gxapp .gx-g .full{grid-column:1/-1}
+#gxapp .gx-row .gx-b{flex:1 1 auto;justify-content:center}
+#gxapp .gx-rp{padding:10px;font-size:11px}
+}
+@media(max-width:420px){#gxapp .gx-g{grid-template-columns:1fr}#gxapp .gx-top h1{font-size:14px}}
+@media print{
+body *{visibility:hidden!important}
+#gx-print,#gx-print *{visibility:visible!important}
+#gx-print{position:absolute;left:0;top:0;width:100%}
+#gx-print .gx-rp{border:0;margin:0;page-break-after:always;font-size:12px}
+#gx-print .gx-leger{page:gxleger;min-width:0;padding:0;font-size:10px}
+#gx-print .gx-rp:last-child{page-break-after:auto}
+#glhgsd{display:none}
+}
+</style>
+</head>
+<body style="margin:0">
+<div id="gxapp"></div>
+<script>
+//<![CDATA[
+(function () {
+'use strict';
+/* ====== KONFIGURASI FIREBASE ======
+   Isi apiKey di bawah (atau lewat menu Pengaturan Sekolah sebagai admin). */
+var GXR_FB = {
+  apiKey: "AIzaSyBVrd6MepHeBe26YR-NxkqhLV0Dpv944PE",
+
+  authDomain: "presensijurnalnilai.firebaseapp.com",
+
+  databaseURL: "https://presensijurnalnilai-default-rtdb.asia-southeast1.firebasedatabase.app",
+
+  projectId: "presensijurnalnilai",
+
+  storageBucket: "presensijurnalnilai.firebasestorage.app",
+
+  messagingSenderId: "484469986460",
+
+  appId: "1:484469986460:web:8439037fa094ebaa410959",
+
+  measurementId: "G-VE8SVQ4DCW"
+
+};
+var SDK = 'https://www.gstatic.com/firebasejs/10.12.2/';
+var K = 'gxr_db_v1', QK = 'gxr_q_v1', SK = 'gxr_ses_v1', WK = 'gxr_wali_v1';
+var SUBJ = ['Pendidikan Agama dan Budi Pekerti','Pendidikan Pancasila','Bahasa Indonesia','Matematika','Ilmu Pengetahuan Alam','Ilmu Pengetahuan Sosial','Bahasa Inggris','Seni Budaya dan Prakarya','Pendidikan Jasmani Olahraga dan Kesehatan','Informatika','Muatan Lokal'];
+var JENIS = ['Tugas Harian','Ulangan Harian','Praktik/Kinerja','Proyek','Portofolio','Sumatif Tengah Semester','Sumatif Akhir Semester'];
+var HARI = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+var COLS = ['settings','teachers','students','journals','attitudes','assess','extras'];
+var ROOT = document.getElementById('gxapp');
+var D = load(), QQ = loadQ(), U = null, fdb = null, fbBusy = false, flushing = false, st = { page: 'dash' };
+try { U = JSON.parse(sessionStorage.getItem(SK)); } catch (e) {}
+
+/* ---------- util ---------- */
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
+function E(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+function q(s) { return ROOT.querySelector(s); }
+function qa(s) { return Array.prototype.slice.call(ROOT.querySelectorAll(s)); }
+function val(id) { var e = document.getElementById(id); return e ? e.value.trim() : ''; }
+function today() { var d = new Date(); return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2); }
+function fmtD(s) { if (!s) return ''; var d = new Date(s + 'T00:00:00'); return HARI[d.getDay()] + ', ' + d.getDate() + ' ' + ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'][d.getMonth()] + ' ' + d.getFullYear(); }
+function sid(s) { return String(s).replace(/[^\w-]/g, '_'); }
+function r2(v) { return Math.round(v * 100) / 100; }
+var LOGO_L = 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhrCUomfX1eN1A7Gn4fPDpS0g4PDjzF7pqQ6AV87GjCjOKuX3JzfzTxM0RflNYj6EU5SYkd37OKe-HXm6TFL2ntasHxGkca4j_TddACdoro1Z9cjnXksb8GpRXpLEcijc-rhLj8dIsnjbPl6HrXxrWHmaDgCYSAKeTWWWchabXj2cTya9uxLcVxno_uMiw/s1280/Logo%20SMPN%201%20Kopang%20Flat.png';
+function kopHtml(inner) { var s = S(), l = s.logoL === undefined ? LOGO_L : s.logoL, r = s.logoR || '';
+  var img = function(u) { return u ? '<img src="' + E(u) + '" alt="" style="width:64px;height:64px;object-fit:contain;flex:0 0 auto;background:none;border:none">': '<span style="width:64px;flex:0 0 auto"></span>'; };
+  return '<div class="kop" style="display:flex;align-items:center;gap:12px;text-align:center">' + img(l) + '<div style="flex:1;min-width:0">' + inner + '</div>' + img(r) + '</div>'; }
+function cf2(m) { return confirm(m) && confirm('KONFIRMASI KEDUA:\nAnda yakin benar-benar ingin melanjutkan?'); }
+function toast(m, t) { var o = q('.gx-toast'); if (o) o.remove(); var d = document.createElement('div'); d.className = 'gx-toast ' + (t || ''); d.textContent = m; ROOT.appendChild(d); setTimeout(function () { d.remove(); }, 2600); }
+function opt(arr, sel, all) { return (all ? '<option value="">' + E(all) + '</option>' : '') + arr.map(function (o) { var v = typeof o === 'object' ? o.v : o, l = typeof o === 'object' ? o.l : o; return '<option value="' + E(v) + '"' + (String(v) === String(sel) ? ' selected' : '') + '>' + E(l) + '</option>'; }).join(''); }
+function dl(name, mime, content) { var b = new Blob([content], { type: mime }); var a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = name; document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 500); }
+function xls(name, head, rows, title) {
+  var h = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="utf-8"></head><body>' + (title ? '<h3>' + E(title) + '</h3>' : '') + '<table border="1"><tr>' + head.map(function (x) { return '<th style="background:#d9efec">' + E(x) + '</th>'; }).join('') + '</tr>' + rows.map(function (r) { return '<tr>' + r.map(function (x) { return '<td>' + E(x) + '</td>'; }).join('') + '</tr>'; }).join('') + '</table></body></html>';
+  dl(name + '.xls', 'application/vnd.ms-excel', '\ufeff' + h);
+}
+function tabHtml(title, head, rows) {
+  return '<!doctype html><html><head><meta charset="utf-8"><title>' + E(title) + '</title><style>body{font-family:Arial,sans-serif;font-size:12px;padding:16px}table{border-collapse:collapse;width:100%}th,td{border:1px solid #333;padding:4px 6px;text-align:left;vertical-align:top}th{background:#e8f0ef}h2,h3{margin:2px 0;text-align:center}.kop{margin-bottom:12px}</style></head><body>' +
+    kopHtml('<h2>' + E(S().school || 'Sekolah') + '</h2><h3>' + E(title) + '</h3>') +
+    '<table><thead><tr>' + head.map(function (x) { return '<th>' + E(x) + '</th>'; }).join('') + '</tr></thead><tbody>' + rows.map(function (r) { return '<tr>' + r.map(function (x) { return '<td>' + E(x) + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody></table></body></html>';
+}
+function printTab(title, head, rows) { var w = window.open('', '_blank'); if (!w) return toast('Izinkan pop-up untuk mencetak', 'err'); w.document.write(tabHtml(title, head, rows)); w.document.close(); w.focus(); setTimeout(function () { w.print(); }, 400); }
+function pdfTab(name, title, head, rows) {
+  var go = function () { var el = document.createElement('div'); el.innerHTML = tabHtml(title, head, rows); document.body.appendChild(el); html2pdf().set({ filename: name + '.pdf', margin: 8, jsPDF: { orientation: head.length > 7 ? 'landscape' : 'portrait' } }).from(el).save().then(function () { el.remove(); }); };
+  if (window.html2pdf) return go(); if (!navigator.onLine) { toast('Offline: gunakan Print lalu Simpan sebagai PDF'); return printTab(title, head, rows); }
+  toast('Menyiapkan PDF...'); loadJs('https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js', go, function () { printTab(title, head, rows); });
+}
+async function hash(s) {
+  s = 'gxr#' + s;
+  if (window.crypto && crypto.subtle && window.TextEncoder) { var b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)); return Array.prototype.map.call(new Uint8Array(b), function (x) { return ('0' + x.toString(16)).slice(-2); }).join(''); }
+  var h = 5381; for (var i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0; return 'd' + h;
+}
+
+/* ---------- penyimpanan lokal ---------- */
+function blankSet() { return { id: 'main', school: '', head: '', headNip: '', year: '2026/2027', semester: 'Ganjil', city: '', subjects: SUBJ.slice(), apiKey: '', updatedAt: 0 }; }
+function fix(d) { d = d || {}; COLS.forEach(function (c) { if (!d[c] || typeof d[c] !== 'object') d[c] = {}; }); if (!d.settings.main) d.settings.main = blankSet(); return d; }
+function load() { try { return fix(JSON.parse(localStorage.getItem(K))); } catch (e) { return fix({}); } }
+function loadQ() { try { return JSON.parse(localStorage.getItem(QK)) || {}; } catch (e) { return {}; } }
+function save() { try { localStorage.setItem(K, JSON.stringify(D)); } catch (e) { toast('Penyimpanan lokal penuh!', 'err'); } }
+function saveQ() { localStorage.setItem(QK, JSON.stringify(QQ)); stat(); }
+function S() { return D.settings.main; }
+function list(c) { return Object.keys(D[c]).map(function (k) { return D[c][k]; }).filter(function (x) { return x && !x.deleted; }); }
+function put(c, o) { o.updatedAt = Date.now(); o.by = U ? U.name : ''; D[c][o.id] = o; save(); QQ[c + '/' + o.id] = 1; saveQ(); flush(); }
+function rm(c, id) { var o = D[c][id]; if (o) { o.deleted = true; put(c, o); } }
+
+/* ---------- Firebase sinkron ---------- */
+function cfg() { var c = JSON.parse(JSON.stringify(GXR_FB)); if (S().apiKey) c.apiKey = S().apiKey; return c; }
+function loadJs(src, ok, er) { if (document.querySelector('script[src="' + src + '"]')) { ok(); return; } var s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = er; document.head.appendChild(s); }
+function fbInit() {
+  if (fdb || fbBusy || !navigator.onLine || !cfg().apiKey) { stat(); return; }
+  fbBusy = true; var fail = function () { fbBusy = false; stat(); };
+  loadJs(SDK + 'firebase-app-compat.js', function () {
+    loadJs(SDK + 'firebase-firestore-compat.js', function () {
+      try { var fb = window.firebase; var app = fb.apps.length ? fb.app() : fb.initializeApp(cfg()); fdb = app.firestore(); listen(); flush(); } catch (e) { console.warn(e); }
+      fbBusy = false; stat();
+    }, fail);
+  }, fail);
+}
+function listen() {
+  COLS.forEach(function (c) {
+    fdb.collection('gxr_' + c).onSnapshot(function (snap) {
+      var ch = 0;
+      snap.docChanges().forEach(function (x) { var d = x.doc.data(); if (!d || !d.id) return; var l = D[c][d.id]; if (!l || (d.updatedAt || 0) > (l.updatedAt || 0)) { if (!QQ[c + '/' + d.id] || !l || d.updatedAt > l.updatedAt) { D[c][d.id] = d; ch++; } } });
+      if (ch) { save(); if (!U) render(); else if (st.page === 'dash') render(); }
+    }, function (e) { console.warn('listen', c, e); stat('Firebase ditolak (cek rules)'); });
+  });
+}
+function flush() {
+  if (!fdb || !navigator.onLine || flushing) { stat(); return; }
+  var keys = Object.keys(QQ); if (!keys.length) { stat(); return; }
+  flushing = true; stat();
+  Promise.all(keys.map(function (k) {
+    var i = k.indexOf('/'), c = k.slice(0, i), id = k.slice(i + 1), loc = D[c][id];
+    if (!loc) { delete QQ[k]; return null; }
+    var ref = fdb.collection('gxr_' + c).doc(id), data = JSON.parse(JSON.stringify(loc));
+    return fdb.runTransaction(function (t) {
+      return t.get(ref).then(function (s) { var r = s.exists ? s.data() : null; if (r && (r.updatedAt || 0) > (data.updatedAt || 0)) return r; t.set(ref, data); return null; });
+    }).then(function (r) { if (r) { D[c][id] = r; save(); } delete QQ[k]; }).catch(function (e) { console.warn('sync', k, e); });
+  })).then(function () { flushing = false; saveQ(); });
+}
+function stat(msg) {
+  var e = q('.gx-st'); if (!e) return; var n = Object.keys(QQ).length;
+  if (!navigator.onLine) { e.className = 'gx-st off'; e.textContent = 'Offline • ' + n + ' antre'; }
+  else if (!fdb) { e.className = 'gx-st pd'; e.textContent = msg || (cfg().apiKey ? 'Menghubungkan...' : 'Lokal (Firebase belum diatur)'); }
+  else if (n) { e.className = 'gx-st pd'; e.textContent = 'Sinkron ' + n + '...'; }
+  else { e.className = 'gx-st on'; e.textContent = 'Online • tersinkron'; }
+}
+window.addEventListener('online', function () { fbInit(); flush(); stat(); });
+window.addEventListener('offline', function () { stat(); });
+setInterval(function () { if (navigator.onLine) { if (!fdb) fbInit(); else flush(); } }, 20000);
+
+/* ---------- data helper ---------- */
+function classes() { var s = {}; list('students').forEach(function (x) { if (x.kelas) s[x.kelas] = 1; }); return Object.keys(s).sort(function (a, b) { return a.localeCompare(b, 'id', { numeric: true }); }); }
+function stuOf(k) { return list('students').filter(function (s) { return !k || s.kelas === k; }).sort(function (a, b) { return (a.kelas || '').localeCompare(b.kelas || '', 'id', { numeric: true }) || (a.no || 0) - (b.no || 0) || a.name.localeCompare(b.name); }); }
+function asOf(k, m, mine) { return list('assess').filter(function (a) { return (!k || a.kelas === k) && (!m || a.mapel === m) && (!mine || U.admin || a.teacher === U.name); }).sort(function (a, b) { return (a.date || '').localeCompare(b.date || '') || a.updatedAt - b.updatedAt; }); }
+function myClasses() { var s = {}; asOf('', '', true).forEach(function (a) { s[a.kelas] = 1; }); return Object.keys(s).sort(function (a, b) { return a.localeCompare(b, 'id', { numeric: true }); }); }
+function ampuOf(n) { var t = list('teachers').filter(function (x) { return x.name === n; })[0]; return t && t.ampu ? t.ampu : null; }
+function myKelas() {
+  var all = classes(); if (!U || U.admin) return all; var a = ampuOf(U.name); if (!a) return all;
+  var ks = all.filter(function (k) { return a[k] && a[k].length; }); return ks.length ? ks : all;
+}
+function myMapel(k) {
+  var sj = S().subjects || SUBJ; if (!U || U.admin) return sj; var a = ampuOf(U.name); if (!a) return sj;
+  if (a[k] && a[k].length) return a[k].filter(function (m) { return sj.indexOf(m) > -1; });
+  var u = {}; Object.keys(a).forEach(function (kk) { (a[kk] || []).forEach(function (m) { u[m] = 1; }); });
+  var r = sj.filter(function (m) { return u[m]; }); return r.length ? r : sj;
+}
+function ampuHint() { return (!U || U.admin || ampuOf(U.name)) ? '' : '<p class="gx-muted">Admin belum mengatur kelas &amp; mapel ampuan Anda — semua kelas ditampilkan.</p>'; }
+function hasV(v) { return v !== undefined && v !== null && v !== ''; }
+function na(asl, s) {
+  var f = asl.filter(function (a) { return a.final && a.scores && hasV(a.scores[s]); });
+  if (f.length) return +f[f.length - 1].scores[s];
+  var sw = 0, sm = 0;
+  asl.forEach(function (a) { if (a.final) return; var v = a.scores && a.scores[s], w = hasV(a.bobot) ? +a.bobot : 1; if (hasV(v) && w > 0) { sm += v * w; sw += w; } });
+  return sw ? r2(sm / sw) : null;
+}
+function pred(v) { return v == null ? '-' : v >= 90 ? 'A' : v >= 80 ? 'B' : v >= 70 ? 'C' : 'D'; }
+function validScore(v) { return typeof v === 'number' ? Number.isFinite(v) && v >= 0 && v <= 100 : typeof v === 'string' && /^(?:\d+(?:[.,]\d+)?|[.,]\d+)$/.test(v.trim()) && Number(v.replace(',', '.')) >= 0 && Number(v.replace(',', '.')) <= 100; }
+function scoreNum(v) { return Number(String(v).replace(',', '.')); }
+function tpOn(a) { return st.tpDraft && Object.prototype.hasOwnProperty.call(st.tpDraft, a.id) ? st.tpDraft[a.id] : a.capIncluded !== false; }
+function capai(al, student, draft) {
+  var rows = al.filter(function (a) { return !a.final && a.tp && tpOn(a); });
+  if (draft) { rows = rows.filter(function (a) { return a.id !== draft.id; }); if (draft.tp && draft.capIncluded) rows.push(draft); }
+  var groups = { excellent: [], good: [], improve: [], pending: [] };
+  rows.forEach(function (a) {
+    var v = a.scores && a.scores[student], k = validScore(a.kkm) ? scoreNum(a.kkm) : 75;
+    var key = !hasV(v) || !validScore(v) ? 'pending' : scoreNum(v) < k ? 'improve' : scoreNum(v) >= k + (100 - k) * 0.6 ? 'excellent' : 'good';
+    if (groups[key].indexOf(a.tp.trim()) < 0) groups[key].push(a.tp.trim());
+  });
+  return [['excellent', 'Menunjukkan kompetensi yang sangat baik dalam hal '], ['good', 'Murid menunjukkan kompetensi yang baik dalam hal '], ['improve', 'Perlu peningkatan dalam hal '], ['pending', 'Belum dinilai dalam hal ']].map(function (g) { return groups[g[0]].length ? g[1] + groups[g[0]].join(', ') + '.' : ''; }).filter(Boolean).join(' ') || '-';
+}
+function tpChoices(al, exclude) {
+  var rows = al.filter(function (a) { return !a.final && a.tp && a.id !== exclude; });
+  return '<div class="gx-row"><b>TP untuk Capaian Pembelajaran</b></div><div class="gx-chk" style="flex-wrap:wrap">' + rows.map(function (a) { return '<label><input type="checkbox" data-c="tpPick" value="' + E(a.id) + '"' + (tpOn(a) ? ' checked' : '') + '> ' + E(a.tp + ' • ' + a.judul + ' • KKM ' + a.kkm) + '</label>'; }).join('') + '</div>' + (rows.length ? '<div class="gx-row"><button class="gx-b s" data-a="tpSave">Simpan Pilihan TP</button></div>' : '');
+}
+function saveTpChoices() { Object.keys(st.tpDraft || {}).forEach(function (id) { var a = D.assess[id]; if (a && a.capIncluded !== st.tpDraft[id]) { a.capIncluded = st.tpDraft[id]; put('assess', a); } }); st.tpDraft = {}; }
+function absJ(k, s) {
+  var days = {}, rank = { A: 1, I: 2, S: 3 }, result = { s: 0, i: 0, a: 0 };
+  list('journals').forEach(function (j) { var code = j.abs && j.abs[s]; if (j.kelas !== k || !j.date || !rank[code]) return; if (!days[j.date] || rank[code] > rank[days[j.date]]) days[j.date] = code; });
+  Object.keys(days).forEach(function (d) { result[days[d].toLowerCase()]++; }); return result;
+}
+function attOf(k, s) { var a = D.attitudes[sid(k + '_' + s)], j = absJ(k, s); if (a && !a.deleted) return a.source === 'journal' ? Object.assign({}, a, j) : a; return { s: j.s, i: j.i, a: j.a, sikap: '' }; }
+function filterRows(inp, tb) { var t = inp.value.toLowerCase(); qa('#' + tb + ' tr[data-q]').forEach(function (r) { r.style.display = r.getAttribute('data-q').indexOf(t) > -1 ? '' : 'none'; }); }
+
+/* ---------- tanda pembuat ---------- */
+(function () {
+  var z = [105,128,39,78,104,115,112,111,39,78,104,122,108,117,107,121,104], t = '';
+  for (var i = 0; i < z.length; i++) t += String.fromCharCode(z[i] - 7);
+  function m() { var e = document.getElementById('glhgsd'); if (!e) { e = document.createElement('div'); e.id = 'glhgsd'; document.body.appendChild(e); } if (e.textContent !== t) e.textContent = t; e.style.display = ''; }
+  m(); setInterval(m, 3000);
+})();
+
+/* ---------- layout ---------- */
+var MENU = [
+  ['dash', '🏠', 'Beranda'],
+  ['#Admin'], ['sekolah', '🏫', 'Pengaturan Sekolah', 1], ['siswaIn', '➕', 'Input Siswa', 1], ['siswaEd', '✏️', 'Edit Data Siswa', 1], ['guru', '👩‍🏫', 'Data Guru', 1],
+  ['#Guru'], ['presensi', '✅', 'Presensi & Jurnal'], ['jurnal', '📒', 'Jurnal Mengajar'], ['hadir', '🙋', 'Kehadiran & Sikap'], ['nilai', '📝', 'Input Penilaian'], ['ekstra', '🏅', 'Nilai Ekstrakurikuler'], ['rekap', '📊', 'Rekap Nilai'], ['katrol', '📈', 'Katrol Nilai'], ['rapor', '🖨️', 'Cetak Rapor'], ['leger', '📋', 'Leger'],
+  ['#Sistem'], ['data', '💾', 'Backup & Restore'], ['akun', '🔑', 'Akun'], ['logout', '🚪', 'Keluar']
+];
+function render() {
+  if (!U) { ROOT.innerHTML = loginHtml(); stat(); return; }
+  var nav = MENU.filter(function (m) { return !(m[3] && !U.admin) && !(m[0] === '#Admin' && !U.admin); }).map(function (m) {
+    if (m[0][0] === '#') return '<div class="sec">' + m[0].slice(1) + '</div>';
+    return '<a data-a="go" data-p="' + m[0] + '" class="' + (st.page === m[0] ? 'act' : '') + '"><span>' + m[1] + '</span>' + m[2] + '</a>';
+  }).join('');
+  var fn = P[st.page] || P.dash;
+  ROOT.innerHTML = '<div class="gx-top"><button class="gx-ham" data-a="menu">☰</button><h1>' + E(S().school || 'Aplikasi Rapor Siswa') + '</h1><span class="gx-st">...</span></div>' +
+    '<div class="gx-wrap"><div class="gx-ov" data-a="menu"></div><aside class="gx-side"><div class="gx-user"><b>' + E(U.name) + '</b><small>' + (U.admin ? 'Administrator' : 'Guru') + ' • TP ' + E(S().year) + '</small></div><nav class="gx-nav">' + nav + '</nav></aside><main class="gx-main">' + fn() + '</main></div>';
+  stat(); if (P[st.page + 'After']) P[st.page + 'After']();
+}
+function go(p) { if (p === 'logout') { if (confirm('Keluar dari aplikasi?')) { U = null; sessionStorage.removeItem(SK); st = { page: 'dash' }; render(); } return; } st.page = p; render(); window.scrollTo(0, 0); }
+
+/* ---------- login ---------- */
+function loginHtml() {
+  var names = list('teachers').map(function (t) { return t.name; }).sort();
+  if (st.newUser) return '<div class="gx-login"><div class="gx-lbox"><h2>Pengguna Baru</h2><p class="gx-muted">Daftarkan identitas guru.</p>' +
+    '<label class="gx-f">Nama Guru (lengkap + gelar)<input class="gx-in" id="gx-nn"></label><label class="gx-f">Password Baru<input class="gx-in" type="password" id="gx-np1"></label><label class="gx-f">Ulangi Password<input class="gx-in" type="password" id="gx-np2"></label>' +
+    '<button class="gx-b" data-a="reg">Daftar &amp; Masuk</button><button class="gx-b s" data-a="toLogin">Kembali ke Login</button><p class="gx-muted" style="text-align:center;margin-top:10px"><span class="gx-st">...</span></p></div></div>';
+  return '<div class="gx-login"><div class="gx-lbox"><h2>' + E(S().school || 'Rapor Siswa') + '</h2><p class="gx-muted">Presensi • Jurnal • Nilai • Rapor</p>' +
+    '<label class="gx-f">Nama Guru<select class="gx-in" id="gx-ln">' + opt([{ v: 'admin', l: 'admin' }].concat(names), '', '-- pilih nama --') + '</select></label>' +
+    '<label class="gx-f">Password<input class="gx-in" type="password" id="gx-lp"></label><button class="gx-b" data-a="login">Masuk</button>' +
+    '<button class="gx-b s" data-a="toNew">+ Pengguna Baru</button><p class="gx-muted" style="text-align:center;margin-top:10px"><span class="gx-st">...</span></p></div></div>';
+}
+
+/* ---------- halaman ---------- */
+var P = {};
+function card(t, b) { return '<div class="gx-card">' + (t ? '<h2>' + t + '</h2>' : '') + b + '</div>'; }
+function F(l, inner, cls) { return '<label class="gx-f ' + (cls || '') + '">' + l + inner + '</label>'; }
+function noCls() { return card('Belum ada data kelas', '<p class="gx-muted">Admin perlu menginput data siswa terlebih dahulu.</p>'); }
+
+P.dash = function () {
+  var mine = U.admin ? list('journals') : list('journals').filter(function (j) { return j.teacher === U.name; });
+  return card('Selamat datang, ' + E(U.name), '<div class="gx-dash">' +
+    [['Siswa', list('students').length], ['Kelas', classes().length], ['Guru', list('teachers').length], ['Jurnal saya', mine.length], ['Penilaian saya', asOf('', '', true).length], ['Antrean sinkron', Object.keys(QQ).length]].map(function (x) { return '<div class="gx-stat"><small>' + x[0] + '</small><b>' + x[1] + '</b></div>'; }).join('') +
+    '</div><p class="gx-muted" style="margin-top:12px">Data tersimpan di browser ini dan otomatis terkirim ke Firebase saat online. Saat offline, data diantrekan dan dikirim begitu internet tersedia.</p>' + (!cfg().apiKey ? '<p class="gx-tag no">Firebase apiKey belum diisi — data hanya lokal.</p>' : ''));
+};
+
+P.sekolah = function () {
+  var s = S();
+  return card('Pengaturan Sekolah', '<div class="gx-g">' + F('Nama Sekolah', '<input class="gx-in" id="s-sc" value="' + E(s.school) + '">', 'full') + F('Nama Kepala Sekolah', '<input class="gx-in" id="s-hd" value="' + E(s.head) + '">') + F('NIP Kepala Sekolah', '<input class="gx-in" id="s-np" value="' + E(s.headNip) + '">') +
+    F('Tahun Ajaran', '<input class="gx-in" id="s-yr" value="' + E(s.year) + '">') + F('Semester', '<select class="gx-in" id="s-sm">' + opt(['Ganjil', 'Genap'], s.semester) + '</select>') + F('Kota/Tempat (untuk TTD)', '<input class="gx-in" id="s-ct" value="' + E(s.city) + '">') +
+    F('Mata Pelajaran (satu per baris)', '<textarea class="gx-in" id="s-sj" rows="8">' + E((s.subjects || []).join('\n')) + '</textarea>', 'full') +
+    F('Logo Kop Kiri (URL)', '<input class="gx-in" id="s-ll" value="' + E(s.logoL === undefined ? LOGO_L : s.logoL) + '" placeholder="https://...">', 'full') +
+    F('Logo Kop Kanan (URL, opsional)', '<input class="gx-in" id="s-lr" value="' + E(s.logoR || '') + '" placeholder="https://... (kosongkan jika tidak ada)">', 'full') +
+    F('Firebase apiKey (opsional, untuk mode online)', '<input class="gx-in" id="s-ak" value="' + E(s.apiKey) + '" placeholder="AIza...">', 'full') +
+    '<p class="gx-muted" style="grid-column:1/-1">Sinkronisasi online butuh apiKey dari Firebase Console (Project Settings → Your apps → Web app). Tanpa apiKey, data hanya tersimpan di browser ini dan tidak terkirim ke Firebase. Setelah apiKey diisi dan disimpan, buka menu Beranda lalu tekan "Sinkronkan Sekarang".</p>' +
+    '</div><div class="gx-row"><button class="gx-b" data-a="saveSet">Simpan Pengaturan</button><button class="gx-b s" data-a="defSubj">Kembalikan Mapel Default</button></div>');
+};
+
+P.siswaIn = function () {
+  return card('Input Siswa Satuan', '<div class="gx-g">' + F('Kelas', '<input class="gx-in" id="i-k" list="gx-kl">') + F('Nama Siswa', '<input class="gx-in" id="i-n">') + F('NISN', '<input class="gx-in" id="i-ns" inputmode="numeric">') + F('Jenis Kelamin', '<select class="gx-in" id="i-jk"><option>L</option><option>P</option></select>') +
+    '</div><datalist id="gx-kl">' + classes().map(function (k) { return '<option value="' + E(k) + '">'; }).join('') + '</datalist><div class="gx-row"><button class="gx-b" data-a="addOne">Tambah Siswa</button></div>') +
+    card('Input Multiple', '<p class="gx-muted">Format A (isi kelas di atas): <b>Nama Siswa;NISN;Jenis Kelamin;</b><br>Format B (tanpa kelas di atas): <b>Nama Siswa;NISN;Jenis Kelamin;Kelas;</b><br>Satu siswa per baris. NISN yang sudah ada akan diperbarui.</p><div class="gx-g">' +
+    F('Kelas (untuk format A)', '<input class="gx-in" id="m-k" list="gx-kl">') + F('Data Siswa', '<textarea class="gx-in" id="m-t" rows="8" placeholder="Ahmad Fauzi;0012345678;L;\nSiti Aminah;0012345679;P;"></textarea>', 'full') +
+    '</div><div class="gx-row"><button class="gx-b" data-a="addMany">Proses Input</button></div>');
+};
+
+P.siswaEd = function () {
+  var k = st.ek || '', rows = stuOf(k);
+  return card('Edit Data Siswa', '<div class="gx-g">' + F('Kelas', '<select class="gx-in" id="e-k" data-c="ek">' + opt(classes(), k, 'Semua Kelas') + '</select>') + F('Cari nama siswa', '<input class="gx-in" data-i="flt" data-t="gx-et" placeholder="ketik nama...">') + '</div>' +
+    (k ? '<p class="gx-muted">Gunakan tombol ▲▼ untuk mengatur nomor urut/absen.</p>' : '') +
+    '<div class="gx-tw"><table class="gx-t"><thead><tr><th>No</th><th>Nama</th><th>NISN</th><th>JK</th><th>Kelas</th><th>Aksi</th></tr></thead><tbody id="gx-et">' +
+    rows.map(function (s, i) { return '<tr data-q="' + E((s.name + ' ' + s.nisn).toLowerCase()) + '" data-id="' + s.id + '"><td>' + (i + 1) + '</td><td><input class="gx-in" data-f="name" value="' + E(s.name) + '"></td><td><input class="gx-in" data-f="nisn" value="' + E(s.nisn) + '" style="width:120px"></td><td><select class="gx-in" data-f="jk">' + opt(['L', 'P'], s.jk) + '</select></td><td><input class="gx-in" data-f="kelas" value="' + E(s.kelas) + '" style="width:80px"></td><td style="white-space:nowrap">' +
+      (k ? '<button class="gx-b s sm" data-a="mv" data-d="-1" data-id="' + s.id + '">▲</button> <button class="gx-b s sm" data-a="mv" data-d="1" data-id="' + s.id + '">▼</button> ' : '') +
+      '<button class="gx-b sm" data-a="edS" data-id="' + s.id + '">Simpan</button> <button class="gx-b r sm" data-a="delS" data-id="' + s.id + '">Hapus</button></td></tr>'; }).join('') +
+    '</tbody></table></div><p class="gx-muted">' + rows.length + ' siswa</p>');
+};
+
+function ampuEdHtml(t) {
+  var ks = classes(), sj = S().subjects || SUBJ, a = t.ampu || {};
+  if (!ks.length) return '<p class="gx-muted">Belum ada data kelas. Input siswa terlebih dahulu.</p>';
+  return '<p class="gx-muted">Centang mata pelajaran yang diampu <b>' + E(t.name) + '</b> di masing-masing kelas. Guru hanya akan melihat kelas &amp; mapel yang dicentang.</p>' +
+    '<div class="gx-tw"><table class="gx-t"><thead><tr><th>Kelas</th><th>Mata Pelajaran yang Diampu</th></tr></thead><tbody>' +
+    ks.map(function (k) { return '<tr><td style="white-space:nowrap"><b>' + E(k) + '</b></td><td><span class="gx-chk" style="flex-wrap:wrap">' + sj.map(function (m) { var on = (a[k] || []).indexOf(m) > -1; return '<label style="min-width:45%"><input type="checkbox" class="gx-ampu" data-k="' + E(k) + '" value="' + E(m) + '"' + (on ? ' checked' : '') + '> ' + E(m) + '</label>'; }).join('') + '</span></td></tr>'; }).join('') +
+    '</tbody></table></div><div class="gx-row"><button class="gx-b" data-a="ampuSave" data-id="' + t.id + '">💾 Simpan Ampuan</button>' + (U.admin ? '<button class="gx-b s" data-a="ampuCancel">Tutup</button>' : '') + '</div>';
+}
+P.guru = function () {
+  var ed = st.ampuT && D.teachers[st.ampuT] && !D.teachers[st.ampuT].deleted ? D.teachers[st.ampuT] : null;
+  return card('Data Guru', '<div class="gx-tw"><table class="gx-t"><thead><tr><th>No</th><th>Nama</th><th>Ampuan</th><th>Terdaftar</th><th>Aksi</th></tr></thead><tbody>' +
+    list('teachers').sort(function (a, b) { return a.name.localeCompare(b.name); }).map(function (t, i) { var am = t.ampu ? Object.keys(t.ampu).filter(function (k) { return t.ampu[k] && t.ampu[k].length; }) : []; return '<tr><td>' + (i + 1) + '</td><td>' + E(t.name) + '</td><td>' + (am.length ? E(am.join(', ')) : '<span class="gx-muted">semua kelas</span>') + '</td><td>' + new Date(t.created || t.updatedAt).toLocaleDateString('id-ID') + '</td><td style="white-space:nowrap"><button class="gx-b sm" data-a="ampuEd" data-id="' + t.id + '">Atur Ampuan</button> <button class="gx-b w sm" data-a="rstT" data-id="' + t.id + '">Reset Password</button> <button class="gx-b r sm" data-a="delT" data-id="' + t.id + '">Hapus</button></td></tr>'; }).join('') +
+    '</tbody></table></div><p class="gx-muted">Reset password mengubah password guru menjadi <b>123456</b>.</p>') +
+    (ed ? card('Kelas &amp; Mapel yang Diampu: ' + E(ed.name), ampuEdHtml(ed)) : '');
+};
+
+function jamSel(id, v) { var a = []; for (var i = 1; i <= 12; i++) a.push(String(i)); return '<select class="gx-in" id="' + id + '">' + opt(a, v || '1') + '</select>'; }
+P.presensi = function () {
+  var ks = myKelas(); if (!ks.length) return noCls();
+  var j = st.editJ ? D.journals[st.editJ] : null; var k = j ? j.kelas : (st.pk && ks.indexOf(st.pk) > -1 ? st.pk : ks[0]); st.pk = k;
+  var abs = j ? j.abs || {} : {};
+  return card(j ? 'Edit Presensi & Jurnal' : 'Presensi & Jurnal Mengajar', '<div class="gx-g">' + F('Kelas', '<select class="gx-in" id="p-k" data-c="pk"' + (j ? ' disabled' : '') + '>' + opt(ks, k) + '</select>') + F('Tanggal', '<input class="gx-in" type="date" id="p-d" value="' + (j ? j.date : today()) + '">') +
+    F('Jam ke', jamSel('p-j1', j && j.jamFrom)) + F('Sampai jam ke', jamSel('p-j2', j && j.jamTo)) + F('Materi Pokok / Tujuan Pembelajaran', '<textarea class="gx-in" id="p-m" rows="2">' + E(j ? j.materi : '') + '</textarea>', 'full') + F('Kegiatan Pembelajaran', '<textarea class="gx-in" id="p-g" rows="2">' + E(j ? j.kegiatan : '') + '</textarea>', 'full') +
+    F('Cari nama siswa', '<input class="gx-in" data-i="flt" data-t="gx-pt" placeholder="ketik nama...">', 'full') + '</div><div class="gx-row"><button class="gx-b" data-a="saveJ">💾 Simpan</button>' + (j ? '<button class="gx-b s" data-a="cancelJ">Batal Edit</button>' : '') + '</div>' +
+    '<div class="gx-tw"><table class="gx-t" style="min-width:360px"><thead><tr><th>No</th><th>Nama Siswa</th><th>Ketidakhadiran</th></tr></thead><tbody id="gx-pt">' +
+    stuOf(k).map(function (s, i) { var v = abs[s.id] || ''; return '<tr data-q="' + E(s.name.toLowerCase()) + '" data-sid="' + s.id + '"><td>' + (i + 1) + '</td><td>' + E(s.name) + '</td><td><span class="gx-chk">' + ['S', 'I', 'A'].map(function (x) { return '<label><input type="checkbox" class="gx-ab" data-c="ab" value="' + x + '"' + (v === x ? ' checked' : '') + '>' + x + '</label>'; }).join('') + '</span></td></tr>'; }).join('') +
+    '</tbody></table></div><p class="gx-muted">S = Sakit, I = Izin, A = Alpa. Siswa tanpa centang dianggap hadir.</p>');
+};
+
+function jFilter() { var k = st.jk || '', f = st.jf || '', t = st.jt || ''; return list('journals').filter(function (j) { return (U.admin || j.teacher === U.name) && (!k || j.kelas === k) && (!f || j.date >= f) && (!t || j.date <= t); }).sort(function (a, b) { return (b.date || '').localeCompare(a.date || '') || (+a.jamFrom) - (+b.jamFrom); }); }
+function jAbs(j) { var c = { S: [], I: [], A: [] }; Object.keys(j.abs || {}).forEach(function (s) { var x = D.students[s]; if (c[j.abs[s]]) c[j.abs[s]].push(x ? x.name : '?'); }); return c; }
+P.jurnal = function () {
+  var rows = jFilter();
+  return card('Jurnal Mengajar', ampuHint() + '<div class="gx-g">' + F('Kelas', '<select class="gx-in" id="j-k">' + opt(myKelas(), st.jk, 'Semua Kelas') + '</select>') + F('Dari tanggal', '<input class="gx-in" type="date" id="j-f" value="' + E(st.jf || '') + '">') + F('Sampai tanggal', '<input class="gx-in" type="date" id="j-t" value="' + E(st.jt || '') + '">') +
+    '</div><div class="gx-row"><button class="gx-b" data-a="jRef">🔄 Refresh</button><button class="gx-b g" data-a="jXls">📗 Excel</button><button class="gx-b s" data-a="jPrint">🖨️ Print</button><button class="gx-b r" data-a="jPdf">📕 PDF</button></div>' +
+    '<div class="gx-tw"><table class="gx-t"><thead><tr><th>Hari, Tanggal</th><th>Kelas</th><th>Jam ke</th><th>Materi Pokok/TP</th><th>Kegiatan</th><th>Kehadiran (S;I;A)</th>' + (U.admin ? '<th>Guru</th>' : '') + '<th>Aksi</th></tr></thead><tbody>' +
+    rows.map(function (j) { var c = jAbs(j); return '<tr><td>' + fmtD(j.date) + '</td><td>' + E(j.kelas) + '</td><td>' + E(j.jamFrom) + '-' + E(j.jamTo) + '</td><td>' + E(j.materi) + '</td><td>' + E(j.kegiatan) + '</td><td title="' + E('S: ' + c.S.join(', ') + ' | I: ' + c.I.join(', ') + ' | A: ' + c.A.join(', ')) + '">' + c.S.length + ';' + c.I.length + ';' + c.A.length + '</td>' + (U.admin ? '<td>' + E(j.teacher) + '</td>' : '') +
+      '<td style="white-space:nowrap"><button class="gx-b sm" data-a="edJ" data-id="' + j.id + '">Edit</button> <button class="gx-b r sm" data-a="delJ" data-id="' + j.id + '">Hapus</button></td></tr>'; }).join('') +
+    '</tbody></table></div><p class="gx-muted">' + rows.length + ' jurnal. Arahkan kursor ke kolom kehadiran untuk melihat nama siswa.</p>');
+};
+
+P.hadir = function () {
+  var ks = myKelas(); if (!ks.length) return noCls(); var k = st.hk && ks.indexOf(st.hk) > -1 ? st.hk : ks[0]; st.hk = k;
+  return card('Kehadiran & Sikap', '<div class="gx-g">' + F('Kelas', '<select class="gx-in" data-c="hk">' + opt(ks, k) + '</select>') + F('Cari nama siswa', '<input class="gx-in" data-i="flt" data-t="gx-ht">') + '</div>' +
+    '<div class="gx-row"><button class="gx-b w" data-a="hJ">📒 Ambil dari Jurnal</button><button class="gx-b" data-a="hSave">💾 Simpan</button><button class="gx-b g" data-a="hXls">📗 Excel</button><button class="gx-b s" data-a="hPrint">🖨️ Print</button><button class="gx-b r" data-a="hPdf">📕 PDF</button></div>' +
+    '<div class="gx-tw"><table class="gx-t"><thead><tr><th>No</th><th>Nama</th><th>Sakit</th><th>Izin</th><th>Alpa</th><th>Sikap</th></tr></thead><tbody id="gx-ht">' +
+    stuOf(k).map(function (s, i) { var a = attOf(k, s.id); return '<tr data-q="' + E(s.name.toLowerCase()) + '" data-sid="' + s.id + '"><td>' + (i + 1) + '</td><td>' + E(s.name) + '</td>' + ['s', 'i', 'a'].map(function (x) { return '<td><input class="gx-in num" type="number" min="0" data-f="' + x + '" value="' + (a[x] || 0) + '"></td>'; }).join('') +
+      '<td><select class="gx-in" data-f="sikap">' + opt(['A', 'B', 'C', 'D', 'F'], a.sikap, '-') + '</select></td></tr>'; }).join('') + '</tbody></table></div><p class="gx-muted">"Ambil dari Jurnal" menghitung hari tidak hadir dari semua jurnal kelas ini (dihitung per hari). Jika status berbeda di tanggal sama, prioritas: Sakit, Izin, lalu Alpa.</p>');
+};
+
+P.nilai = function () {
+  var ks = myKelas(); if (!ks.length) return noCls();
+  var k = st.nk && ks.indexOf(st.nk) > -1 ? st.nk : ks[0]; st.nk = k;
+  var sj = myMapel(k); var m = st.nm && sj.indexOf(st.nm) > -1 ? st.nm : sj[0]; st.nm = m;
+  var al = asOf(k, m, true), a = st.na && D.assess[st.na] && !D.assess[st.na].deleted ? D.assess[st.na] : null; if (!a) st.na = '';
+  var x = a || { date: today(), jenis: JENIS[0], judul: '', tp: '', kkm: 75, bobot: 1, scores: {} };
+  return card('Input Penilaian', '<div class="gx-g">' + F('Kelas', '<select class="gx-in" data-c="nk">' + opt(ks, k) + '</select>') + F('Mata Pelajaran', '<select class="gx-in" data-c="nm">' + opt(sj, m) + '</select>') +
+    F('Penilaian', '<select class="gx-in" data-c="na">' + opt(al.map(function (z) { return { v: z.id, l: z.date + ' • ' + z.jenis + ' • ' + z.judul }; }), st.na, '+ Penilaian Baru') + '</select>', 'full') +
+    F('Tanggal Penilaian', '<input class="gx-in" type="date" id="n-d" value="' + E(x.date) + '">') + F('Jenis Penilaian', '<select class="gx-in" id="n-j">' + opt(JENIS.concat(x.jenis && JENIS.indexOf(x.jenis) < 0 ? [x.jenis] : []), x.jenis) + '</select>') +
+    F('Judul / Nama Penilaian / Materi', '<input class="gx-in" id="n-t" value="' + E(x.judul) + '">', 'full') + F('Tujuan Pembelajaran', '<input class="gx-in" id="n-tp" placeholder="menggunakan tanda baca/menghitung luas segitiga" data-i="nStat" value="' + E(x.tp) + '">', 'full') +
+    F('KKM / KKTP', '<input class="gx-in" type="number" id="n-kkm" data-i="nStat" value="' + E(x.kkm) + '">') + F('Bobot', '<input class="gx-in" type="number" step="0.1" id="n-b" value="' + E(x.bobot) + '">') +
+    F('Cari nama / NISN', '<input class="gx-in" data-i="flt" data-t="gx-nt">', 'full') + '</div>' +
+    '<div class="gx-row"><button class="gx-b" data-a="nSave">💾 Simpan Penilaian</button><button class="gx-b g" data-a="nXls">📗 Excel</button><button class="gx-b s" data-a="nPrint">🖨️ Print</button><button class="gx-b r" data-a="nPdf">📕 PDF</button>' + (a ? '<button class="gx-b r" data-a="nDel">🗑️ Hapus Penilaian</button>' : '') + '</div>' +
+    '<div class="gx-row"><label class="gx-chk"><input type="checkbox" id="n-cap" data-i="nStat"' + (x.capIncluded !== false ? ' checked' : '') + '> Tampilkan TP penilaian ini di Capaian Pembelajaran</label></div>' + tpChoices(al, a && a.id) + '<div class="gx-stats" id="gx-ns"></div><div class="gx-tw"><table class="gx-t"><thead><tr><th>No</th><th>Nama Siswa</th><th>NISN</th><th>JK</th><th>Nilai</th><th>Ket.</th><th>Capaian Pembelajaran</th></tr></thead><tbody id="gx-nt">' +
+    stuOf(k).map(function (s, i) { var v = x.scores && hasV(x.scores[s.id]) ? x.scores[s.id] : ''; return '<tr data-q="' + E((s.name + ' ' + s.nisn).toLowerCase()) + '" data-sid="' + s.id + '"><td>' + (i + 1) + '</td><td>' + E(s.name) + '</td><td>' + E(s.nisn) + '</td><td>' + E(s.jk) + '</td><td><input class="gx-in num gx-sc" type="text" inputmode="decimal" data-i="nStat" value="' + E(v) + '"></td><td class="kt"></td><td class="cp"></td></tr>'; }).join('') +
+    '</tbody></table></div>');
+};
+P.nilaiAfter = function () { nStat(); };
+function nStat() {
+  var kkm = validScore(val('n-kkm')) ? scoreNum(val('n-kkm')) : 75, vs = [], scores = {}, al = asOf(st.nk, st.nm, true);
+  qa('#gx-nt tr').forEach(function (r) { var i = r.querySelector('.gx-sc'), v = i.value.trim(), kt = r.querySelector('.kt'); i.setAttribute('aria-invalid', v !== '' && !validScore(v) ? 'true' : 'false'); if (v === '') { kt.innerHTML = ''; return; } if (!validScore(v)) { kt.innerHTML = '<span class="gx-tag no">Nilai harus angka 0–100</span>'; return; } v = scoreNum(v); scores[r.getAttribute('data-sid')] = v; vs.push(v); kt.innerHTML = v >= kkm ? '<span class="gx-tag ok">Tuntas</span>' : '<span class="gx-tag no">Belum Tuntas</span>'; });
+  var draft = { id: st.na, tp: val('n-tp'), kkm: kkm, capIncluded: !!q('#n-cap:checked'), scores: scores };
+  qa('#gx-nt tr').forEach(function (r) { r.querySelector('.cp').textContent = capai(al, r.getAttribute('data-sid'), draft); });
+  var n = vs.length, avg = n ? r2(vs.reduce(function (a, b) { return a + b; }, 0) / n) : 0, t = vs.filter(function (v) { return v >= kkm; }).length;
+  var e = document.getElementById('gx-ns'); if (e) e.innerHTML = [['Sudah dinilai', n + '/' + qa('#gx-nt tr').length], ['Rata-rata', avg], ['Tuntas (KKM)', t + (n ? ' (' + Math.round(t / n * 100) + '%)' : '')], ['Tertinggi', n ? Math.max.apply(0, vs) : '-'], ['Terendah', n ? Math.min.apply(0, vs) : '-']].map(function (x) { return '<div class="gx-stat"><small>' + x[0] + '</small><b>' + x[1] + '</b></div>'; }).join('');
+}
+
+function rekapData() {
+  var ks = U.admin ? classes() : myKelas(); var k = st.rk && ks.indexOf(st.rk) > -1 ? st.rk : ks[0];
+  var ms = {}; asOf(k, '', true).forEach(function (a) { ms[a.mapel] = 1; }); ms = Object.keys(ms).filter(function (x) { return U.admin || myMapel(k).indexOf(x) > -1; }); var m = st.rm && ms.indexOf(st.rm) > -1 ? st.rm : ms[0];
+  st.rk = k; st.rm = m; return { ks: ks, k: k, ms: ms, m: m, al: k && m ? asOf(k, m, true) : [] };
+}
+P.rekap = function () {
+  var r = rekapData(); if (!r.ks.length) return card('Rekap Nilai', '<p class="gx-muted">Belum ada penilaian yang Anda input.</p>');
+  var al = r.al, all = !!st.rall, ss = stuOf(r.k), nas = ss.map(function (s) { return na(al, s.id); }).filter(function (v) { return v != null; });
+  return card('Rekap Nilai', '<div class="gx-g">' + F('Kelas', '<select class="gx-in" data-c="rk">' + opt(r.ks, r.k) + '</select>') + F('Mata Pelajaran', '<select class="gx-in" data-c="rm">' + opt(r.ms, r.m) + '</select>') + F('Cari nama siswa', '<input class="gx-in" data-i="flt" data-t="gx-rt">') + '</div>' +
+    '<div class="gx-row"><label class="gx-chk"><label><input type="checkbox" data-c="rall"' + (all ? ' checked' : '') + '> Tampilkan semua penilaian</label></label><button class="gx-b g" data-a="rXls">📗 Excel</button><button class="gx-b s" data-a="rPrint">🖨️ Print</button><button class="gx-b r" data-a="rPdf">📕 PDF</button></div>' +
+    '<h3 style="margin-top:14px">Daftar Penilaian &amp; Bobot</h3><div class="gx-tw"><table class="gx-t"><thead><tr><th>#</th><th>Tanggal</th><th>Jenis</th><th>Judul</th><th>TP</th><th>CP</th><th>KKM</th><th>Bobot</th></tr></thead><tbody>' +
+    al.map(function (a, i) { return '<tr><td>P' + (i + 1) + '</td><td>' + E(a.date) + '</td><td>' + E(a.jenis) + (a.final ? ' <span class="gx-tag ok">final</span>' : '') + '</td><td>' + E(a.judul) + '</td><td>' + E(a.tp || '-') + '</td><td>' + (!a.final && a.tp ? '<input type="checkbox" aria-label="Tampilkan CP ' + E(a.judul) + '" data-c="tpPick" value="' + E(a.id) + '"' + (tpOn(a) ? ' checked' : '') + '>' : '-') + '</td><td>' + E(a.kkm) + '</td><td><input class="gx-in num gx-bw" type="number" step="0.1" data-id="' + a.id + '" value="' + E(hasV(a.bobot) ? a.bobot : 1) + '"></td></tr>'; }).join('') +
+    '</tbody></table></div><div class="gx-row"><button class="gx-b" data-a="rBobot">💾 Simpan Bobot</button><button class="gx-b s" data-a="tpSave">Simpan Pilihan CP</button><span class="gx-muted">Bobot dihitung proporsional walau totalnya tidak 100.</span></div>' +
+    '<div class="gx-stats">' + [['Jumlah penilaian', al.length], ['Jumlah siswa', ss.length], ['Rata-rata kelas', nas.length ? r2(nas.reduce(function (a, b) { return a + b; }, 0) / nas.length) : '-']].map(function (x) { return '<div class="gx-stat"><small>' + x[0] + '</small><b>' + x[1] + '</b></div>'; }).join('') + '</div>' +
+    '<div class="gx-tw"><table class="gx-t"><thead><tr><th>No</th><th>Nama</th><th>NISN</th>' + (all ? al.map(function (a, i) { return '<th title="' + E(a.judul) + '">P' + (i + 1) + '</th>'; }).join('') : '') + '<th>Nilai Akhir</th><th>Predikat</th><th>Capaian Pembelajaran</th></tr></thead><tbody id="gx-rt">' +
+    ss.map(function (s, i) { var v = na(al, s.id); return '<tr data-q="' + E(s.name.toLowerCase()) + '"><td>' + (i + 1) + '</td><td>' + E(s.name) + '</td><td>' + E(s.nisn) + '</td>' + (all ? al.map(function (a) { var x = a.scores && a.scores[s.id]; return '<td>' + (hasV(x) ? E(x) : '-') + '</td>'; }).join('') : '') + '<td><b>' + (v == null ? '-' : v) + '</b></td><td>' + pred(v) + '</td><td class="cp" data-sid="' + E(s.id) + '">' + E(capai(al, s.id)) + '</td></tr>'; }).join('') + '</tbody></table></div>');
+};
+
+function extraList(k) { return list('extras').filter(function (x) { return x.kelas === k; }).sort(function (a,b) { return a.name.localeCompare(b.name); }); }
+P.ekstra = function () {
+  var ks = myKelas(); if (!ks.length) return noCls(); var k = ks.indexOf(st.xk) >= 0 ? st.xk : ks[0]; st.xk = k;
+  var al = extraList(k).filter(function (x) { return U.admin || x.teacher === U.name; }), x = al.filter(function (x) { return x.id === st.xid; })[0] || { name: '', mode: 'letter', scores: {}, notes: {} }; st.xid = x.id || '';
+  return card('Input Nilai Ekstrakurikuler', '<div class="gx-g">' + F('Kelas', '<select class="gx-in" data-c="xk">' + opt(ks,k) + '</select>') + F('Ekstrakurikuler', '<select class="gx-in" data-c="xid">' + opt(al.map(function(x) { return {v:x.id,l:x.name}; }),st.xid,'+ Ekstrakurikuler Baru') + '</select>') + F('Nama Ekstrakurikuler', '<input class="gx-in" id="x-name" value="' + E(x.name) + '">') + F('Jenis Nilai', '<select class="gx-in" id="x-mode">' + opt([{v:'letter',l:'Huruf A, B, C, D, F'},{v:'number',l:'Bilangan 0–100'}],x.mode) + '</select>') + F('Cari nama siswa', '<input class="gx-in" data-i="flt" data-t="gx-xt">') + '</div><div class="gx-row"><button class="gx-b" data-a="xSave">Simpan Nilai Ekstrakurikuler</button><button class="gx-b g" data-a="xXls">📗 Excel</button><button class="gx-b s" data-a="xPrint">🖨️ Print</button><button class="gx-b r" data-a="xPdf">📕 PDF</button>' + (x.id ? '<button class="gx-b r" data-a="xDel">Hapus Ekstrakurikuler</button>' : '') + '</div><div class="gx-tw"><table class="gx-t"><thead><tr><th>No</th><th>Nama Siswa</th><th>Nilai</th><th>Keterangan</th></tr></thead><tbody id="gx-xt">' + stuOf(k).map(function(s,i) { return '<tr data-sid="' + E(s.id) + '" data-q="' + E(s.name.toLowerCase()) + '"><td>' + (i+1) + '</td><td>' + E(s.name) + '</td><td><input class="gx-in num" data-f="score" value="' + E(hasV(x.scores[s.id]) ? x.scores[s.id] : '') + '"></td><td><input class="gx-in" data-f="note" value="' + E((x.notes || {})[s.id] || '') + '"></td></tr>'; }).join('') + '</tbody></table></div>');
+};
+function validExtra(v, mode) { return mode === 'letter' ? /^[ABCDF]$/.test(String(v).trim().toUpperCase()) : validScore(v); }
+
+var METODE = [
+  { v: 'kkm', l: 'Naikkan yang di bawah KKM menjadi KKM' },
+  { v: 'lin', l: 'Skala linear (terendah→KKM, tertinggi→maks)' },
+  { v: 'add', l: 'Tambah konstan (terendah mencapai KKM)' },
+  { v: 'pct', l: 'Proporsional (tertinggi → nilai maks)' },
+  { v: 'sqrt', l: 'Akar kuadrat (√nilai × 10, diskalakan maks)' },
+  { v: 'int', l: 'Interpolasi bawah KKM (yang tuntas tetap)' },
+  { v: 'avg', l: 'Geser rata-rata ke KKM + 5' }
+];
+function katrolCalc(vals, kkm, mx, md) {
+  var xs = vals.filter(function (v) { return v != null; }); if (!xs.length) return vals;
+  var lo = Math.min.apply(0, xs), hi = Math.max.apply(0, xs), avg = xs.reduce(function (a, b) { return a + b; }, 0) / xs.length;
+  return vals.map(function (x) {
+    if (x == null) return null; var n = x;
+    if (md === 'kkm') n = x < kkm ? kkm : x;
+    else if (md === 'lin') n = hi === lo ? Math.max(x, kkm) : kkm + (x - lo) / (hi - lo) * (mx - kkm);
+    else if (md === 'add') n = x + Math.max(0, kkm - lo);
+    else if (md === 'pct') n = hi ? x * mx / hi : x;
+    else if (md === 'sqrt') n = Math.sqrt(Math.max(0, x)) * 10 * mx / 100;
+    else if (md === 'int') n = x >= kkm ? x : kkm + (kkm === lo ? 0 : (x - lo) / (kkm - lo)) * Math.min(5, mx - kkm);
+    else if (md === 'avg') n = x + Math.max(0, kkm + 5 - avg);
+    return Math.round(Math.min(mx, Math.max(x, n)));
+  });
+}
+function katrolData() {
+  var ks = U.admin ? classes() : myKelas(); var k = st.kk && ks.indexOf(st.kk) > -1 ? st.kk : ks[0]; st.kk = k;
+  var src = [], al = k ? asOf(k, '', true) : [], ms = {};
+  al.forEach(function (a) { if (!a.final) src.push({ v: 'a:' + a.id, l: a.mapel + ' • ' + a.jenis + ' • ' + a.judul }); ms[a.mapel] = 1; });
+  Object.keys(ms).forEach(function (m) { src.push({ v: 'm:' + m, l: 'NILAI AKHIR • ' + m }); });
+  var s = st.ksrc && src.some(function (x) { return x.v === st.ksrc; }) ? st.ksrc : (src[0] && src[0].v); st.ksrc = s;
+  var ss = stuOf(k), before = ss.map(function (x) { if (!s) return null; if (s[0] === 'a') { var v = D.assess[s.slice(2)].scores[x.id]; return hasV(v) ? +v : null; } return na(asOf(k, s.slice(2), false), x.id); });
+  var kkm = st.kkm || 75, mx = st.kmx || 100, md = st.kmd || 'kkm';
+  return { ks: ks, k: k, src: src, s: s, ss: ss, before: before, after: katrolCalc(before, kkm, mx, md), kkm: kkm, mx: mx, md: md };
+}
+P.katrol = function () {
+  var r = katrolData(); if (!r.ks.length) return card('Katrol Nilai', '<p class="gx-muted">Belum ada penilaian.</p>');
+  var b = r.before.filter(function (v) { return v != null; }), a = r.after.filter(function (v) { return v != null; }), av = function (x) { return x.length ? r2(x.reduce(function (p, c) { return p + c; }, 0) / x.length) : '-'; };
+  return card('Katrol / Up Nilai Siswa', '<div class="gx-g">' + F('Kelas', '<select class="gx-in" data-c="kk">' + opt(r.ks, r.k) + '</select>') + F('Sumber Nilai', '<select class="gx-in" data-c="ksrc">' + opt(r.src, r.s) + '</select>', 'full') +
+    F('KKM Baru', '<input class="gx-in" type="number" data-c="kkm" value="' + r.kkm + '">') + F('Nilai Maksimal', '<input class="gx-in" type="number" data-c="kmx" value="' + r.mx + '">') + F('Metode Pengkatrolan', '<select class="gx-in" data-c="kmd">' + opt(METODE, r.md) + '</select>', 'full') +
+    F('Cari nama siswa', '<input class="gx-in" data-i="flt" data-t="gx-kt">', 'full') + '</div><div class="gx-row"><button class="gx-b" data-a="kSave">💾 Simpan sebagai Nilai Baru</button><button class="gx-b g" data-a="kXls">📗 Excel</button><button class="gx-b s" data-a="kPrint">🖨️ Print</button><button class="gx-b r" data-a="kPdf">📕 PDF</button></div>' +
+    '<div class="gx-stats">' + [['Rata-rata asli', av(b)], ['Rata-rata baru', av(a)], ['Tuntas KKM (asli)', b.filter(function (v) { return v >= r.kkm; }).length + '/' + b.length], ['Tuntas KKM (baru)', a.filter(function (v) { return v >= r.kkm; }).length + '/' + a.length]].map(function (x) { return '<div class="gx-stat"><small>' + x[0] + '</small><b>' + x[1] + '</b></div>'; }).join('') + '</div>' +
+    '<div class="gx-tw"><table class="gx-t"><thead><tr><th>No</th><th>Nama</th><th>NISN</th><th>Sebelum</th><th>Sesudah</th><th>Selisih</th><th>Ket.</th></tr></thead><tbody id="gx-kt">' +
+    r.ss.map(function (s, i) { var x = r.before[i], y = r.after[i]; return '<tr data-q="' + E(s.name.toLowerCase()) + '"><td>' + (i + 1) + '</td><td>' + E(s.name) + '</td><td>' + E(s.nisn) + '</td><td>' + (x == null ? '-' : x) + '</td><td><b>' + (y == null ? '-' : y) + '</b></td><td>' + (x == null ? '' : '+' + r2(y - x)) + '</td><td>' + (y == null ? '' : y >= r.kkm ? '<span class="gx-tag ok">Tuntas</span>' : '<span class="gx-tag no">Belum</span>') + '</td></tr>'; }).join('') + '</tbody></table></div>' +
+    '<p class="gx-muted">Sumber penilaian: hasil disimpan sebagai penilaian baru dan bobot penilaian asli menjadi 0. Sumber nilai akhir: hasil disimpan sebagai nilai akhir final mapel tersebut (dipakai di rapor).</p>');
+};
+
+function wali() { try { return JSON.parse(localStorage.getItem(WK)) || {}; } catch (e) { return {}; } }
+var RCOLS = [['nilai', 'Nilai Akhir', 1], ['pred', 'Predikat', 0], ['avg', 'Rata-rata Kelas', 0], ['kkm', 'KKM/KKTP', 0], ['cap', 'Capaian Kompetensi', 1], ['abs', 'Ketidakhadiran', 1], ['sikap', 'Sikap', 1], ['extra', 'Ekstrakurikuler', 1]];
+var GROUP_A = SUBJ.slice(0, 7);
+function subjectGroup(m) { return GROUP_A.indexOf(m) >= 0 ? 'A' : 'B'; }
+function rcols() { var c = st.rcol || {}; var r = {}; RCOLS.forEach(function (x) { r[x[0]] = c[x[0]] === undefined ? !!x[2] : !!c[x[0]]; }); return r; }
+P.rapor = function () {
+  var ks = classes(); if (!ks.length) return noCls(); var k = st.pk2 && ks.indexOf(st.pk2) > -1 ? st.pk2 : ks[0]; st.pk2 = k; var w = wali()[k] || {};
+  var ss = stuOf(k); var titles = ['Penilaian Sumatif Tengah Semester', 'Penilaian Sumatif Akhir Semester', 'Penilaian Akhir Tahun', 'Laporan Perkembangan Belajar'];
+  var cc = rcols();
+  var colChk = '<div style="margin-top:12px"><b style="font-size:13px">Kolom yang ditampilkan di rapor:</b><div class="gx-chk" style="flex-wrap:wrap;margin-top:6px">' +
+    RCOLS.map(function (x) { return '<label style="min-width:150px"><input type="checkbox" data-c="rcol" value="' + x[0] + '"' + (cc[x[0]] ? ' checked' : '') + '> ' + x[1] + '</label>'; }).join('') + '</div></div>';
+  return card('Cetak Rapor', '<div class="gx-g">' + F('Kelas', '<select class="gx-in" data-c="pk2">' + opt(ks, k) + '</select>') + F('Siswa', '<select class="gx-in" id="r-s" data-c="rprev">' + opt(ss.map(function (s) { return { v: s.id, l: s.name }; }), st.rs, 'Semua siswa di kelas') + '</select>') +
+    F('Judul Rapor', '<select class="gx-in" id="r-t" data-c="rprev">' + opt(titles, st.rt || titles[1]) + '</select>') + F('Semester', '<select class="gx-in" id="r-sm" data-c="rprev">' + opt(['Ganjil', 'Genap'], st.rsm || S().semester) + '</select>') +
+    F('Nama Wali Kelas', '<input class="gx-in" id="r-w" data-c="rprev" value="' + E(w.n || '') + '">') + F('NIP Wali Kelas', '<input class="gx-in" id="r-wn" data-c="rprev" value="' + E(w.nip || '') + '">') +
+    F('Tempat', '<input class="gx-in" id="r-c" data-c="rprev" value="' + E(st.rc || S().city) + '">') + F('Tanggal Cetak', '<input class="gx-in" type="date" id="r-d" data-c="rprev" value="' + E(st.rd || today()) + '">') +
+    '</div>' + colChk + '<div class="gx-row"><label class="gx-chk"><input type="checkbox" data-c="rgroup"' + (st.rgroup !== false ? ' checked' : '') + '> Baris Kelompok Mata Pelajaran A dan B</label></div><div class="gx-row"><button class="gx-b" data-a="rpPrint">🖨️ Print</button><button class="gx-b g" data-a="rpXls">📗 Export Excel</button><button class="gx-b w" data-a="rpPdf">📄 Export PDF</button></div>') +
+    '<div id="gx-print" class="gx-print"></div>';
+};
+P.raporAfter = function () { rPrev(); };
+function raporOne(s, o) {
+  var k = s.kelas, sj = S().subjects || SUBJ, at = attOf(k, s.id), cc = o.cols || rcols(), ss = stuOf(k);
+  var grouped = o.grouped !== false, ordered = grouped ? sj.filter(function(m) { return subjectGroup(m) === 'A'; }).concat(sj.filter(function(m) { return subjectGroup(m) === 'B'; })) : sj;
+  var previous = '', span = 2 + ['nilai','pred','avg','kkm','cap'].filter(function(x) { return cc[x]; }).length;
+  var rows = ordered.map(function (m, i) {
+    var al = asOf(k, m, false), v = na(al, s.id), tps = [], kkm = 0;
+    al.forEach(function (a) { if (a.tp && tps.indexOf(a.tp) < 0) tps.push(a.tp); if (a.kkm) kkm = a.kkm; });
+    var avg = '-'; if (cc.avg) { var vs = ss.map(function (x) { return na(al, x.id); }).filter(function (x) { return x != null; }); avg = vs.length ? r2(vs.reduce(function (a, b) { return a + b; }, 0) / vs.length) : '-'; }
+    var group = subjectGroup(m), separator = grouped && group !== previous ? '<tr><th colspan="' + span + '" style="text-align:left">Kelompok ' + group + '</th></tr>' : ''; previous = group;
+    return separator + '<tr><td style="text-align:center">' + (i + 1) + '</td><td>' + E(m) + '</td>' +
+      (cc.nilai ? '<td style="text-align:center">' + (v == null ? '-' : Math.round(v)) + '</td>' : '') +
+      (cc.pred ? '<td style="text-align:center">' + pred(v) + '</td>' : '') +
+      (cc.avg ? '<td style="text-align:center">' + avg + '</td>' : '') +
+      (cc.kkm ? '<td style="text-align:center">' + (kkm || '-') + '</td>' : '') +
+      (cc.cap ? '<td>' + E(capai(al, s.id)) + '</td>' : '') + '</tr>';
+  }).join('');
+  var head = '<tr><th style="width:6%">No</th><th>Mata Pelajaran</th>' + (cc.nilai ? '<th style="width:9%">Nilai</th>' : '') + (cc.pred ? '<th style="width:9%">Predikat</th>' : '') + (cc.avg ? '<th style="width:11%">Rata-rata Kelas</th>' : '') + (cc.kkm ? '<th style="width:9%">KKM/KKTP</th>' : '') + (cc.cap ? '<th>Capaian Kompetensi</th>' : '') + '</tr>';
+  var absTb = (cc.abs || cc.sikap) ? '<table class="bt" style="width:100%"><thead><tr><th colspan="2">Ketidakhadiran &amp; Sikap</th></tr></thead><tbody>' +
+    (cc.abs ? '<tr><td>Sakit</td><td>' + (at.s || 0) + ' hari</td></tr><tr><td>Izin</td><td>' + (at.i || 0) + ' hari</td></tr><tr><td>Tanpa Keterangan</td><td>' + (at.a || 0) + ' hari</td></tr>' : '') +
+    (cc.sikap ? '<tr><td>Sikap</td><td>' + E(at.sikap || '-') + '</td></tr>' : '') + '</tbody></table>' : '';
+  var extraTb = cc.extra ? '<table class="bt"><thead><tr><th>Ekstrakurikuler</th><th>Nilai</th><th>Keterangan</th></tr></thead><tbody>' + extraList(k).filter(function(x) { return hasV(x.scores && x.scores[s.id]); }).map(function(x) { return '<tr><td>' + E(x.name) + '</td><td>' + E(x.scores[s.id]) + '</td><td>' + E((x.notes || {})[s.id] || '-') + '</td></tr>'; }).join('') + '</tbody></table>' : '';
+  return '<div class="gx-rp">' + kopHtml('<b>' + E(S().school || 'NAMA SEKOLAH') + '</b><div style="font-weight:700;font-size:15px">LAPORAN HASIL BELAJAR</div><div>' + E(o.t) + '</div><div>Tahun Pelajaran ' + E(S().year) + '</div>') +
+    '<table class="idt"><tr><td style="width:18%">Nama Siswa</td><td>: <b>' + E(s.name) + '</b></td><td style="width:14%">Kelas</td><td>: ' + E(k) + '</td></tr><tr><td>NISN</td><td>: ' + E(s.nisn) + '</td><td>Semester</td><td>: ' + E(o.sm) + '</td></tr></table>' +
+    '<table class="bt" style="margin-top:10px"><thead>' + head + '</thead><tbody>' + rows + '</tbody></table><div class="gx-report-bottom">' + (absTb ? '<div>' + absTb + '</div>' : '') + (extraTb ? '<div>' + extraTb + '</div>' : '') + '</div>' +
+    '<div class="ttd"><div>Mengetahui,<br>Kepala Sekolah<div class="sp"></div><b><u>' + E(S().head || '....................') + '</u></b><br>NIP. ' + E(S().headNip || '-') + '</div><div>' + E(o.c || '') + (o.c ? ', ' : '') + E(fmtD(o.d).replace(/^\w+, /, '')) + '<br>Wali Kelas<div class="sp"></div><b><u>' + E(o.w || '....................') + '</u></b><br>NIP. ' + E(o.wn || '-') + '</div></div></div>';
+}
+function rOpts() { return { t: val('r-t'), sm: val('r-sm'), w: val('r-w'), wn: val('r-wn'), c: val('r-c'), d: val('r-d'), cols: rcols(), grouped: st.rgroup !== false }; }
+function rPrev() {
+  var e = document.getElementById('gx-print'); if (!e) return; var o = rOpts(), k = st.pk2, s = val('r-s');
+  st.rs = s; st.rt = o.t; st.rsm = o.sm; st.rc = o.c; st.rd = o.d; var w = wali(); w[k] = { n: o.w, nip: o.wn }; localStorage.setItem(WK, JSON.stringify(w));
+  e.innerHTML = (s ? [D.students[s]] : stuOf(k)).filter(Boolean).map(function (x) { return raporOne(x, o); }).join('');
+}
+
+/* ---------- leger ---------- */
+var LCOLS = [['no','No'],['nama','Nama'],['nisn','NISN'],['jk','JK'],['mapel','Mata Pelajaran'],['jml','Jumlah'],['avg','Rata-rata'],['s','Sakit'],['i','Izin'],['a','Alpa'],['extra','Ekstrakurikuler'],['sikap','Sikap'],['rank','Ranking Kelas'],['ranky','Ranking Jenjang'],['ranka','Ranking Semua Jenjang']];
+var SHORT_SUBJ = ['PABP','PP','B.Ind','MTK','IPA','IPS','B.Ing','SBdP','PJOK','TIK','Mulok'];
+function shortSubject(m) { var i = SUBJ.indexOf(m); return i >= 0 ? SHORT_SUBJ[i] : m.split(/\s+/).map(function(w) { return w.charAt(0).toUpperCase(); }).join('') || m; }
+function yearLevel(k) { var m = String(k).match(/^\s*(\d+)/); return m ? m[1] : ''; }
+function legerClasses(mode, selected, level) { return classes().filter(function(k) { return mode === 'all' || (mode === 'year' ? !!level && yearLevel(k) === level : (selected || []).indexOf(k) >= 0); }); }
+function lcols() { var c = {}; LCOLS.forEach(function(x) { c[x[0]] = !st.lcol || st.lcol[x[0]] !== false; }); return c; }
+function legerClassData(k) {
+  var sj = S().subjects || SUBJ;
+  var rows = stuOf(k).map(function(s) { var values = sj.map(function(m) { return na(asOf(k,m,false),s.id); }), graded = values.filter(function(v) { return v !== null; }); return {student:s, values:values, sum:graded.length ? r2(graded.reduce(function(a,b) { return a+b; },0)) : null, average:graded.length ? r2(graded.reduce(function(a,b) { return a+b; },0)/graded.length) : null}; });
+  rows.forEach(function(r) { r.rank = r.average === null ? null : 1 + rows.filter(function(x) { return x.average !== null && x.average > r.average; }).length; });
+  return {subjects:sj,rows:rows};
+}
+function legerRankMaps() {
+  var all = {}, byYear = {};
+  classes().forEach(function(k) { var y = yearLevel(k); legerClassData(k).rows.forEach(function(r) { if (r.average === null) return; all[r.student.id] = r.average; if (y) (byYear[y] = byYear[y] || {})[r.student.id] = r.average; }); });
+  function rankOf(map) { var res = {}; Object.keys(map).forEach(function(id) { res[id] = 1 + Object.keys(map).filter(function(o) { return map[o] > map[id]; }).length; }); return res; }
+  var ry = {}; Object.keys(byYear).forEach(function(y) { ry[y] = rankOf(byYear[y]); });
+  return { all: rankOf(all), year: ry };
+}
+function legerTableData(k, cc, dec) {
+  var data = legerClassData(k), head = [], keys = [], rm = (cc.ranky || cc.ranka) ? legerRankMaps() : null, yl = yearLevel(k);
+  var fmt = function(v) { return v === null ? '-' : (dec ? r2(v).toFixed(2) : Math.round(v)); };
+  LCOLS.forEach(function(x) { if (!cc[x[0]]) return; if (x[0] === 'mapel') data.subjects.forEach(function(m,i) { head.push(shortSubject(m)); keys.push('m:'+i); }); else { head.push(x[1]); keys.push(x[0]); } });
+  return {head:head, rows:data.rows.map(function(r,i) { var s = r.student, at = attOf(k,s.id), cells = {no:i+1,nama:s.name,nisn:s.nisn,jk:s.jk,jml:fmt(r.sum),avg:fmt(r.average),s:at.s || 0,i:at.i || 0,a:at.a || 0,sikap:at.sikap || '-',rank:r.rank === null ? '-' : r.rank,ranky:rm && rm.year[yl] && rm.year[yl][s.id] || '-',ranka:rm && rm.all[s.id] || '-',extra:extraList(k).filter(function(x) { return hasV(x.scores && x.scores[s.id]); }).map(function(x) { return x.name + ': ' + x.scores[s.id]; }).join('; ') || '-'};
+    return keys.map(function(key) { if (key.slice(0,2) === 'm:') return fmt(r.values[+key.slice(2)]); return cells[key] == null ? '' : cells[key]; }); }), subjects:cc.mapel ? data.subjects : []};
+}
+function selectedLegerClasses() { return legerClasses(st.lmode || 'one', st.lmode === 'many' ? st.lmany || [] : [st.lk], st.lyear); }
+function legerOne(k, cc) {
+  var t = legerTableData(k,cc,st.ldec);
+  return '<section class="gx-rp gx-leger">' + kopHtml('<b>' + E(S().school || 'NAMA SEKOLAH') + '</b><div>LEGER NILAI • KELAS ' + E(k) + '</div><div>Tahun Pelajaran ' + E(S().year) + ' • Semester ' + E(S().semester) + '</div>') + (t.head.length ? '<table class="bt"><thead><tr>' + t.head.map(function(x) { return '<th>' + E(x) + '</th>'; }).join('') + '</tr></thead><tbody>' + t.rows.map(function(r) { return '<tr>' + r.map(function(v) { return '<td>' + E(v) + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody></table>' : '') + '<div class="gx-legend">' + t.subjects.map(function(m) { return E(shortSubject(m) + ' = ' + m); }).join(' · ') + '</div></section>';
+}
+P.leger = function () {
+  var ks = classes(); if (!ks.length) return noCls(); if (ks.indexOf(st.lk) < 0) st.lk = ks[0]; var levels = []; ks.forEach(function(k) { var y = yearLevel(k); if (y && levels.indexOf(y) < 0) levels.push(y); }); if (levels.indexOf(st.lyear) < 0) st.lyear = levels[0];
+  var mode = st.lmode || 'one', cc = lcols();
+  return card('Cetak Leger', '<div class="gx-g">' + F('Cakupan', '<select class="gx-in" data-c="lmode">' + opt([{v:'one',l:'Per kelas'},{v:'many',l:'Beberapa kelas'},{v:'year',l:'Per angkatan'},{v:'all',l:'Semua kelas'}],mode) + '</select>') + (mode === 'one' ? F('Kelas','<select class="gx-in" data-c="lk">' + opt(ks,st.lk) + '</select>') : mode === 'year' ? F('Angkatan','<select class="gx-in" data-c="lyear">' + opt(levels.map(function(y) { return {v:y,l:'Kelas '+y}; }),st.lyear) + '</select>') : '') + '</div>' + (mode === 'many' ? '<div class="gx-row gx-chk">' + ks.map(function(k) { return '<label><input type="checkbox" data-c="lmany" value="' + E(k) + '"' + ((st.lmany || []).indexOf(k) >= 0 ? ' checked' : '') + '> ' + E(k) + '</label>'; }).join('') + '</div>' : '') + '<h3 style="margin-top:16px">Kolom Leger</h3><div class="gx-row gx-chk">' + LCOLS.map(function(x) { return '<label><input type="checkbox" data-c="lcol" value="' + x[0] + '"' + (cc[x[0]] ? ' checked' : '') + '> ' + x[1] + '</label>'; }).join('') + '</div><div class="gx-row gx-chk"><label><input type="checkbox" data-c="ldec"' + (st.ldec ? ' checked' : '') + '> Nilai mapel 2 angka di belakang koma (centang) atau dibulatkan (tidak centang)</label></div><div class="gx-row"><button class="gx-b" data-a="lPrint">🖨️ Print</button><button class="gx-b w" data-a="lPdf">📄 Export PDF</button><button class="gx-b g" data-a="lXls">📗 Export Excel</button></div>') + '<div class="gx-leger-wrap"><div id="gx-print" class="gx-print"></div></div>';
+};
+P.legerAfter = function () { lPrev(); };
+function lPrev() { var el = document.getElementById('gx-print'); if (!el) return; var ks = selectedLegerClasses(); el.innerHTML = !ks.length ? '<p class="gx-muted">Belum ada kelas dipilih.</p>' : ks.map(function(k) { return legerOne(k,lcols()); }).join(''); }
+function lReady() { if (!selectedLegerClasses().length) { toast('Pilih kelas untuk leger.', 'err'); return false; } if (!LCOLS.some(function(x) { return lcols()[x[0]]; })) { toast('Pilih minimal satu kolom.', 'err'); return false; } lPrev(); return true; }
+
+P.data = function () {
+  return card('Backup', '<p class="gx-muted">' + (U.admin ? 'Unduh seluruh data aplikasi (JSON).' : 'Unduh data jurnal &amp; penilaian Anda (JSON).') + '</p><div class="gx-row"><button class="gx-b" data-a="bak">⬇️ Download Backup</button><button class="gx-b s" data-a="sync">🔄 Sinkron Sekarang</button></div>') +
+    card('Restore', '<p class="gx-muted">Pulihkan dari file backup. Data yang lebih baru di file akan menimpa data saat ini lalu disinkronkan.</p><input type="file" accept=".json,application/json" id="gx-rf" class="gx-in"><div class="gx-row"><button class="gx-b w" data-a="restore">⬆️ Restore</button></div>') +
+    card('Reset Data Tertentu', '<p class="gx-muted">Hapus data per kelas / per mapel' + (U.admin ? '' : ' (hanya data milik Anda)') + '. Data juga terhapus di server saat sinkron. Lakukan backup dahulu.</p><div class="gx-g">' +
+      F('Kelas', '<select class="gx-in" id="rs-k">' + opt(U.admin ? classes() : myKelas(), st.rsk) + '</select>') +
+      F('Mata Pelajaran', '<select class="gx-in" id="rs-m">' + opt(myMapel(st.rsk || classes()[0]), st.rsm2, 'Semua Mapel') + '</select>') + '</div><div class="gx-row">' +
+      '<button class="gx-b r" data-a="rstJurnalK">Hapus Jurnal &amp; Presensi</button><button class="gx-b r" data-a="rstNilaiK">Hapus Penilaian</button><button class="gx-b r" data-a="rstHadirK">Hapus Kehadiran &amp; Sikap</button><button class="gx-b r" data-a="rstEkstraK">Hapus Ekstrakurikuler</button></div>' +
+      '<p class="gx-muted">Jika mapel dipilih, hanya penilaian mapel tersebut di kelas ini yang dihapus.</p>') +
+    card('Reset', '<p class="gx-muted">' + (U.admin ? 'Reset menghapus data (juga di server). Lakukan backup dahulu.' : 'Hapus semua jurnal dan penilaian milik Anda.') + '</p><div class="gx-row">' +
+      (U.admin ? '<button class="gx-b r" data-a="rstNilai">Hapus semua Jurnal &amp; Nilai</button><button class="gx-b r" data-a="rstAll">Reset Total (kecuali pengaturan)</button>' : '<button class="gx-b r" data-a="rstMine">Hapus Data Saya</button>') +
+      '<button class="gx-b s" data-a="rstLocal">Bersihkan Cache Lokal</button></div>') +
+    card('Info', '<p class="gx-muted">Antrean belum terkirim: <b>' + Object.keys(QQ).length + '</b>. Jumlah data lokal: ' + COLS.map(function (c) { return c + ' ' + list(c).length; }).join(', ') + '.</p>');
+};
+P.akun = function () {
+  if (U.admin) return card('Ganti Password Admin', '<p class="gx-muted">Password awal admin adalah <b>admin</b>. Setelah diganti, password baru tersimpan di data pengaturan dan ikut tersinkron.</p><div class="gx-g">' + F('Password lama', '<input class="gx-in" type="password" id="a-o">') + F('Password baru', '<input class="gx-in" type="password" id="a-n1">') + F('Ulangi password baru', '<input class="gx-in" type="password" id="a-n2">') + '</div><div class="gx-row"><button class="gx-b" data-a="chPw">Simpan</button></div>');
+  var t = list('teachers').filter(function (x) { return x.name === U.name; })[0];
+  return card('Ganti Password', '<div class="gx-g">' + F('Password lama', '<input class="gx-in" type="password" id="a-o">') + F('Password baru', '<input class="gx-in" type="password" id="a-n1">') + F('Ulangi password baru', '<input class="gx-in" type="password" id="a-n2">') + '</div><div class="gx-row"><button class="gx-b" data-a="chPw">Simpan</button></div>') +
+    (t ? card('Kelas &amp; Mapel yang Saya Ampu', ampuEdHtml(t)) : '');
+};
+
+/* ---------- aksi ---------- */
+var A = {};
+A.go = function (el) { go(el.getAttribute('data-p')); };
+A.menu = function () { q('.gx-side').classList.toggle('open'); q('.gx-ov').classList.toggle('open'); };
+A.toNew = function () { st.newUser = 1; render(); };
+A.toLogin = function () { st.newUser = 0; render(); };
+A.login = async function () {
+  var n = val('gx-ln'), p = document.getElementById('gx-lp').value;
+  if (!n) return toast('Pilih nama guru', 'err');
+  if (n === 'admin') { var ap = S().adminPass; if (ap ? ap === await hash(p) : p === 'admin') { U = { name: 'admin', admin: true }; } else return toast('Password salah', 'err'); }
+  else { var t = list('teachers').filter(function (x) { return x.name === n; })[0]; if (!t || t.pass !== await hash(p)) return toast('Password salah', 'err'); U = { name: t.name, admin: false }; }
+  sessionStorage.setItem(SK, JSON.stringify(U)); st = { page: 'dash' }; render(); toast('Selamat datang', 'ok');
+};
+A.reg = async function () {
+  var n = val('gx-nn'), p1 = document.getElementById('gx-np1').value, p2 = document.getElementById('gx-np2').value;
+  if (n.length < 3) return toast('Nama guru minimal 3 huruf', 'err'); if (n.toLowerCase() === 'admin') return toast('Nama tidak boleh "admin"', 'err');
+  if (p1.length < 4) return toast('Password minimal 4 karakter', 'err'); if (p1 !== p2) return toast('Password tidak sama', 'err');
+  if (list('teachers').some(function (t) { return t.name.toLowerCase() === n.toLowerCase(); })) return toast('Nama sudah terdaftar', 'err');
+  U = { name: n, admin: false }; put('teachers', { id: 't_' + sid(n.toLowerCase()), name: n, pass: await hash(p1), created: Date.now() });
+  sessionStorage.setItem(SK, JSON.stringify(U)); st = { page: 'dash' }; render(); toast('Akun dibuat', 'ok');
+};
+A.saveSet = function () {
+  if (!cf2('Simpan perubahan pengaturan sekolah?')) return; var s = S();
+  s.school = val('s-sc'); s.head = val('s-hd'); s.headNip = val('s-np'); s.year = val('s-yr'); s.semester = val('s-sm'); s.city = val('s-ct'); s.apiKey = val('s-ak'); s.logoL = val('s-ll'); s.logoR = val('s-lr');
+  s.subjects = val('s-sj').split('\n').map(function (x) { return x.trim(); }).filter(Boolean); put('settings', s); fbInit(); render(); toast('Pengaturan disimpan', 'ok');
+};
+A.defSubj = function () { document.getElementById('s-sj').value = SUBJ.join('\n'); };
+function nextNo(k) { return stuOf(k).reduce(function (m, s) { return Math.max(m, s.no || 0); }, 0) + 1; }
+function upsertStu(n, ns, jk, k) {
+  jk = /^p/i.test(jk) ? 'P' : 'L'; var ex = ns ? list('students').filter(function (s) { return s.nisn === ns; })[0] : null;
+  if (ex) { ex.name = n; ex.jk = jk; if (ex.kelas !== k) { ex.kelas = k; ex.no = nextNo(k); } put('students', ex); return 'u'; }
+  put('students', { id: uid(), name: n, nisn: ns, jk: jk, kelas: k, no: nextNo(k) }); return 'n';
+}
+A.addOne = function () { var k = val('i-k'), n = val('i-n'); if (!k || !n) return toast('Kelas dan nama wajib diisi', 'err'); upsertStu(n, val('i-ns'), val('i-jk'), k); ['i-n', 'i-ns'].forEach(function (i) { document.getElementById(i).value = ''; }); toast('Siswa ditambahkan', 'ok'); document.getElementById('i-n').focus(); };
+A.addMany = function () {
+  var k0 = val('m-k'), ln = val('m-t').split('\n'), c = { n: 0, u: 0, e: 0 };
+  ln.forEach(function (l) { if (!l.trim()) return; var p = l.split(';').map(function (x) { return x.trim(); }); var k = p[3] || k0; if (!p[0] || !k) { c.e++; return; } c[upsertStu(p[0], p[1] || '', p[2] || 'L', k)]++; });
+  toast(c.n + ' baru, ' + c.u + ' diperbarui, ' + c.e + ' gagal', c.e ? 'err' : 'ok'); if (!c.e) document.getElementById('m-t').value = '';
+};
+A.edS = function (el) {
+  var s = D.students[el.getAttribute('data-id')], tr = el.closest('tr'); if (!cf2('Simpan perubahan data ' + s.name + '?')) return;
+  qa('[data-id="' + s.id + '"] [data-f]').forEach(function (i) { s[i.getAttribute('data-f')] = i.value.trim(); }); tr.querySelectorAll('[data-f]').forEach(function (i) { s[i.getAttribute('data-f')] = i.value.trim(); });
+  put('students', s); render(); toast('Tersimpan', 'ok');
+};
+A.delS = function (el) { var s = D.students[el.getAttribute('data-id')]; if (cf2('Hapus siswa ' + s.name + '?')) { rm('students', s.id); render(); } };
+A.mv = function (el) {
+  var ss = stuOf(st.ek), i = ss.findIndex(function (s) { return s.id === el.getAttribute('data-id'); }), j = i + (+el.getAttribute('data-d'));
+  if (j < 0 || j >= ss.length) return; var t = ss[i]; ss[i] = ss[j]; ss[j] = t; ss.forEach(function (s, x) { if (s.no !== x + 1) { s.no = x + 1; put('students', s); } }); render();
+};
+A.ampuEd = function (el) { st.ampuT = el.getAttribute('data-id'); render(); };
+A.ampuCancel = function () { st.ampuT = null; render(); };
+A.ampuSave = function (el) {
+  var t = D.teachers[el.getAttribute('data-id')]; if (!t) return;
+  if (!cf2('Simpan pengaturan ampuan untuk ' + t.name + '?')) return;
+  var a = {}; qa('.gx-ampu:checked').forEach(function (c) { var k = c.getAttribute('data-k'); (a[k] = a[k] || []).push(c.value); });
+  t.ampu = a; put('teachers', t); render(); toast('Ampuan tersimpan', 'ok');
+};
+A.rstT = async function (el) { var t = D.teachers[el.getAttribute('data-id')]; if (cf2('Reset password ' + t.name + ' menjadi 123456?')) { t.pass = await hash('123456'); put('teachers', t); toast('Password direset', 'ok'); } };
+A.delT = function (el) { var t = D.teachers[el.getAttribute('data-id')]; if (cf2('Hapus akun guru ' + t.name + '? (data nilai/jurnal tetap ada)')) { rm('teachers', t.id); render(); } };
+A.saveJ = function () {
+  var j = st.editJ ? D.journals[st.editJ] : null; if (j && !cf2('Simpan perubahan jurnal ini?')) return;
+  var abs = {}; qa('#gx-pt tr').forEach(function (r) { var c = r.querySelector('.gx-ab:checked'); if (c) abs[r.getAttribute('data-sid')] = c.value; });
+  var o = j || { id: uid(), teacher: U.name, kelas: st.pk }; o.date = val('p-d'); o.jamFrom = val('p-j1'); o.jamTo = val('p-j2'); o.materi = val('p-m'); o.kegiatan = val('p-g'); o.abs = abs;
+  if (+o.jamTo < +o.jamFrom) return toast('Jam sampai tidak boleh lebih kecil', 'err'); if (!o.date || !o.materi) return toast('Tanggal dan materi wajib diisi', 'err');
+  put('journals', o); toast('Jurnal & presensi tersimpan', 'ok'); st.editJ = null; if (j) go('jurnal'); else render();
+};
+A.cancelJ = function () { st.editJ = null; go('jurnal'); };
+A.edJ = function (el) { st.editJ = el.getAttribute('data-id'); go('presensi'); };
+A.delJ = function (el) { if (cf2('Hapus jurnal ini?')) { rm('journals', el.getAttribute('data-id')); render(); } };
+A.jRef = function () { st.jk = val('j-k'); st.jf = val('j-f'); st.jt = val('j-t'); render(); };
+function jRows() { return jFilter().map(function (j) { var c = jAbs(j); return [fmtD(j.date), j.kelas, j.jamFrom + '-' + j.jamTo, j.materi, j.kegiatan, c.S.join(', ') || '0', c.I.join(', ') || '0', c.A.join(', ') || '0', j.teacher]; }); }
+var JHEAD = ['Hari, Tanggal', 'Kelas', 'Jam ke', 'Materi Pokok/TP', 'Kegiatan Pembelajaran', 'Sakit', 'Izin', 'Alpa', 'Guru'];
+A.jXls = function () { A.jRef(); xls('Jurnal_Mengajar', JHEAD, jRows(), 'Jurnal Mengajar - ' + U.name); };
+A.jPrint = function () { A.jRef(); printTab('Jurnal Mengajar - ' + U.name, JHEAD, jRows()); };
+A.jPdf = function () { A.jRef(); pdfTab('Jurnal_Mengajar', 'Jurnal Mengajar - ' + U.name, JHEAD, jRows()); };
+A.hJ = function () { st.hSource = 'journal'; qa('#gx-ht tr').forEach(function (r) { var a = absJ(st.hk, r.getAttribute('data-sid')); ['s', 'i', 'a'].forEach(function (x) { r.querySelector('[data-f="' + x + '"]').value = a[x]; }); }); toast('Diambil dari jurnal — klik Simpan', 'ok'); };
+A.hSave = function () {
+  if (!confirm('Simpan data kehadiran & sikap kelas ' + st.hk + '?')) return;
+  qa('#gx-ht tr').forEach(function (r) { var s = r.getAttribute('data-sid'), id = sid(st.hk + '_' + s), o = D.attitudes[id] || { id: id, kelas: st.hk, sid: s }, ch = o.deleted ? 1 : 0; o.deleted = false; var source = st.hSource || o.source || 'manual'; if (source !== o.source) ch = 1; o.source = source;
+    r.querySelectorAll('[data-f]').forEach(function (i) { var f = i.getAttribute('data-f'), v = f === 'sikap' ? i.value : (+i.value || 0); if (o[f] !== v) { o[f] = v; ch = 1; } }); if (ch || !D.attitudes[id]) put('attitudes', o); });
+  toast('Tersimpan', 'ok');
+};
+var HHEAD = ['No', 'Nama', 'NISN', 'Sakit', 'Izin', 'Alpa', 'Sikap'];
+function hRows() { return stuOf(st.hk).map(function (s, i) { var a = attOf(st.hk, s.id); return [i + 1, s.name, s.nisn, a.s || 0, a.i || 0, a.a || 0, a.sikap || '']; }); }
+A.hXls = function () { xls('Kehadiran_' + st.hk, HHEAD, hRows(), 'Kehadiran & Sikap Kelas ' + st.hk); };
+A.hPrint = function () { printTab('Kehadiran & Sikap Kelas ' + st.hk, HHEAD, hRows()); };
+A.hPdf = function () { pdfTab('Kehadiran_' + st.hk, 'Kehadiran & Sikap Kelas ' + st.hk, HHEAD, hRows()); };
+A.tpSave = function () { if (!cf2('Simpan pilihan TP untuk capaian pembelajaran dan rapor?')) return; saveTpChoices(); if (st.page === 'nilai') nStat(); else render(); toast('Pilihan TP disimpan', 'ok'); };
+A.nSave = function () {
+  nStat(); var bad = q('#gx-nt [aria-invalid="true"]'); if (bad) { bad.focus(); return toast('Nilai ' + bad.closest('tr').children[1].textContent + ' harus berupa angka 0–100.', 'err'); }
+  if (!val('n-t')) return toast('Judul penilaian wajib diisi', 'err');
+  if (!validScore(val('n-kkm'))) return toast('KKM/KKTP harus angka 0–100', 'err');
+  if (val('n-b') !== '' && (!Number.isFinite(+val('n-b')) || +val('n-b') < 0)) return toast('Bobot harus angka tidak negatif', 'err');
+  var a = st.na ? D.assess[st.na] : null; if ((a || Object.keys(st.tpDraft || {}).length) && !cf2('Simpan perubahan penilaian dan pilihan TP?')) return;
+  var o = Object.assign({}, a || { id: uid(), teacher: U.name, kelas: st.nk, mapel: st.nm });
+  o.date = val('n-d'); o.jenis = val('n-j'); o.judul = val('n-t'); o.tp = val('n-tp'); o.kkm = scoreNum(val('n-kkm')); o.bobot = val('n-b') === '' ? 1 : +val('n-b'); o.capIncluded = !!q('#n-cap:checked');
+  var sc = Object.assign({}, o.scores || {}); qa('#gx-nt tr').forEach(function (r) { var v = r.querySelector('.gx-sc').value.trim(), student = r.getAttribute('data-sid'); if (v === '') delete sc[student]; else sc[student] = scoreNum(v); });
+  saveTpChoices(); o.scores = sc; put('assess', o); st.na = o.id; render(); toast('Penilaian tersimpan', 'ok');
+};
+A.xSave = function () {
+  if (!val('x-name')) return toast('Nama ekstrakurikuler wajib diisi', 'err'); var mode = val('x-mode'), scores = {}, notes = {}, bad;
+  qa('#gx-xt tr').forEach(function(r) { var i = r.querySelector('[data-f="score"]'), v = i.value.trim(), id = r.getAttribute('data-sid'); i.setAttribute('aria-invalid',v && !validExtra(v,mode) ? 'true' : 'false'); if (v && !validExtra(v,mode)) bad = bad || i; else if (v) scores[id] = mode === 'letter' ? v.toUpperCase() : scoreNum(v); notes[id] = r.querySelector('[data-f="note"]').value.trim(); });
+  if (bad) { bad.focus(); return toast(mode === 'letter' ? 'Nilai harus A, B, C, D, atau F.' : 'Nilai harus angka 0–100.', 'err'); }
+  var old = st.xid && D.extras[st.xid]; if (old && !cf2('Simpan perubahan nilai ekstrakurikuler?')) return;
+  var x = Object.assign({},old || {id:uid(),teacher:U.name,kelas:st.xk}); x.name = val('x-name'); x.mode = mode; x.scores = scores; x.notes = notes; put('extras',x); st.xid = x.id; render(); toast('Nilai ekstrakurikuler tersimpan','ok');
+};
+A.xDel = function () { if (cf2('Hapus nilai ekstrakurikuler ini?')) { rm('extras',st.xid); st.xid = ''; render(); } };
+var XHEAD = ['No', 'Nama Siswa', 'NISN', 'Nilai', 'Keterangan'];
+function xRows() { var x = D.extras[st.xid] || { scores: {}, notes: {} }; return stuOf(st.xk).map(function (s, i) { return [i + 1, s.name, s.nisn, hasV(x.scores[s.id]) ? x.scores[s.id] : '', (x.notes || {})[s.id] || '']; }); }
+function xTitle() { var x = D.extras[st.xid]; return 'Ekstrakurikuler ' + (x ? x.name : '(baru)') + ' - Kelas ' + st.xk; }
+A.xXls = function () { xls('Ekstra_' + st.xk, XHEAD, xRows(), xTitle()); };
+A.xPrint = function () { printTab(xTitle(), XHEAD, xRows()); };
+A.xPdf = function () { pdfTab('Ekstra_' + st.xk, xTitle(), XHEAD, xRows()); };
+A.nDel = function () { if (cf2('Hapus penilaian ini beserta seluruh nilainya?')) { rm('assess', st.na); st.na = ''; render(); } };
+var NHEAD = ['No', 'Nama Siswa', 'NISN', 'JK', 'Nilai', 'Ket', 'Capaian Pembelajaran'];
+function nRows() { var kkm = +val('n-kkm') || 0; return qa('#gx-nt tr').map(function (r, i) { var s = D.students[r.getAttribute('data-sid')], v = r.querySelector('.gx-sc').value; return [i + 1, s.name, s.nisn, s.jk, v, v === '' ? '' : (scoreNum(v) >= kkm ? 'Tuntas' : 'Belum Tuntas'), r.querySelector('.cp').textContent]; }); }
+function nTitle() { return st.nm + ' - ' + st.nk + ' - ' + val('n-j') + ': ' + val('n-t') + ' (KKM ' + (+val('n-kkm') || 0) + ')'; }
+function nOk() { nStat(); if (q('#gx-nt [aria-invalid="true"]')) { toast('Perbaiki nilai tidak valid sebelum export.', 'err'); return false; } return true; }
+A.nXls = function () { if (!nOk()) return; xls('Nilai_' + st.nk + '_' + st.nm, NHEAD, nRows(), nTitle()); };
+A.nPrint = function () { if (nOk()) printTab(nTitle(), NHEAD, nRows()); };
+A.nPdf = function () { if (nOk()) pdfTab('Nilai_' + st.nk + '_' + st.nm, nTitle(), NHEAD, nRows()); };
+A.rBobot = function () { if (!confirm('Simpan bobot?')) return; qa('.gx-bw').forEach(function (i) { var a = D.assess[i.getAttribute('data-id')], v = +i.value || 0; if (a.bobot !== v) { a.bobot = v; put('assess', a); } }); render(); toast('Bobot disimpan', 'ok'); };
+function rHead() { var r = rekapData(); return ['No', 'Nama', 'NISN'].concat(st.rall ? r.al.map(function (a, i) { return 'P' + (i + 1) + ' ' + a.judul + ' (b' + (hasV(a.bobot) ? a.bobot : 1) + ')'; }) : []).concat(['Nilai Akhir', 'Predikat', 'Capaian Pembelajaran']); }
+function rRows() { var r = rekapData(), all = !!st.rall; return stuOf(r.k).map(function (s, i) { var v = na(r.al, s.id); return [i + 1, s.name, s.nisn].concat(all ? r.al.map(function (a) { var x = a.scores && a.scores[s.id]; return hasV(x) ? x : ''; }) : []).concat([v == null ? '' : v, pred(v), capai(r.al, s.id)]); }); }
+function rTitle() { var r = rekapData(); return 'Rekap ' + r.m + ' Kelas ' + r.k; }
+A.rXls = function () { var r = rekapData(); xls('Rekap_' + r.k + '_' + r.m, rHead(), rRows(), rTitle()); };
+A.rPrint = function () { printTab(rTitle(), rHead(), rRows()); };
+A.rPdf = function () { var r = rekapData(); pdfTab('Rekap_' + r.k + '_' + r.m, rTitle(), rHead(), rRows()); };
+A.kSave = function () {
+  var r = katrolData(); if (!r.s) return; if (!validScore(r.kkm) || !validScore(r.mx) || r.mx < r.kkm || r.after.some(function(v) { return v != null && !validScore(v); })) return toast('KKM dan nilai maksimal harus 0–100; maksimal tidak boleh di bawah KKM.', 'err'); var m = r.s[0] === 'a' ? D.assess[r.s.slice(2)] : null;
+  if (!cf2('Simpan hasil katrol sebagai nilai baru?' + (m ? '\nBobot penilaian asli akan diubah menjadi 0.' : '\nHasil menjadi nilai akhir final mapel ' + r.s.slice(2) + '.'))) return;
+  var sc = {}; r.ss.forEach(function (s, i) { if (r.after[i] != null) sc[s.id] = r.after[i]; });
+  var meth = METODE.filter(function (x) { return x.v === r.md; })[0].l;
+  put('assess', { id: uid(), teacher: U.name, kelas: r.k, mapel: m ? m.mapel : r.s.slice(2), date: today(), jenis: m ? m.jenis : 'Nilai Akhir (Katrol)', judul: 'Katrol: ' + (m ? m.judul : 'Nilai Akhir') + ' [' + meth + ']', tp: m ? m.tp : '', kkm: r.kkm, bobot: m ? (hasV(m.bobot) ? m.bobot : 1) : 1, final: !m, scores: sc });
+  if (m) { m.bobot = 0; put('assess', m); } render(); toast('Nilai katrol tersimpan', 'ok');
+};
+var KHEAD = ['No', 'Nama', 'NISN', 'Sebelum', 'Sesudah', 'Ket'];
+function kRows() { var r = katrolData(); return r.ss.map(function (s, i) { return [i + 1, s.name, s.nisn, r.before[i] == null ? '' : r.before[i], r.after[i] == null ? '' : r.after[i], r.after[i] == null ? '' : r.after[i] >= r.kkm ? 'Tuntas' : 'Belum']; }); }
+function kTitle() { var r = katrolData(); return 'Katrol Nilai Kelas ' + r.k + ' (KKM ' + r.kkm + ', maks ' + r.mx + ')'; }
+A.kXls = function () { xls('Katrol_' + st.kk, KHEAD, kRows(), kTitle()); };
+A.kPrint = function () { printTab(kTitle(), KHEAD, kRows()); };
+A.kPdf = function () { pdfTab('Katrol_' + st.kk, kTitle(), KHEAD, kRows()); };
+A.rpPrint = function () { rPrev(); window.print(); };
+A.rpXls = function () { rPrev(); var h = document.getElementById('gx-print').innerHTML.replace(/<table class="bt"/g, '<table border="1" class="bt"'); dl('Rapor_' + st.pk2 + '.xls', 'application/vnd.ms-excel', '\ufeff<html><head><meta charset="utf-8"></head><body>' + h + '</body></html>'); };
+A.rpPdf = function () {
+  rPrev(); var el = document.getElementById('gx-print');
+  var go2 = function () { window.html2pdf().set({ margin: 8, filename: 'Rapor_' + st.pk2 + '.pdf', html2canvas: { scale: 2 }, jsPDF: { format: 'a4' }, pagebreak: { mode: ['css', 'legacy'], after: '.gx-rp' } }).from(el).save(); };
+  if (window.html2pdf) return go2(); if (!navigator.onLine) { toast('Offline: gunakan Print → Simpan sebagai PDF'); return window.print(); }
+  toast('Menyiapkan PDF...'); loadJs('https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js', go2, function () { window.print(); });
+};
+A.lPrint = function () { if (lReady()) window.print(); };
+A.lXls = function () { if (!lReady()) return; var h = selectedLegerClasses().map(function(k) { return legerOne(k,lcols()); }).join('').replace(/<table class="bt"/g,'<table border="1" class="bt"'); dl('Leger_' + today() + '.xls','application/vnd.ms-excel','\ufeff<html><head><meta charset="utf-8"></head><body>' + h + '</body></html>'); };
+A.lPdf = function () {
+  if (!lReady()) return;
+  var generate = function () { var el = document.getElementById('gx-print'); window.html2pdf().set({margin:8,filename:'Leger_' + today() + '.pdf',html2canvas:{scale:2,windowWidth:1400,onclone:function(doc) { var target = doc.getElementById('gx-print'); if (target) target.style.width = '1120px'; }},jsPDF:{format:'a4',orientation:'landscape'},pagebreak:{mode:['css','legacy'],avoid:'tr',after:'.gx-leger:not(:last-child)'}}).from(el).save(); };
+  if (window.html2pdf) return generate(); if (!navigator.onLine) { toast('Offline: gunakan Print → Simpan sebagai PDF'); return window.print(); }
+  toast('Menyiapkan PDF...'); loadJs('https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js',generate,function() { toast('Gunakan Print → Simpan sebagai PDF'); window.print(); });
+};
+A.bak = function () {
+  var d = U.admin ? D : { journals: {}, assess: {}, extras: {} }; if (!U.admin) ['journals', 'assess', 'extras'].forEach(function (c) { list(c).forEach(function (x) { if (x.teacher === U.name) d[c][x.id] = x; }); });
+  dl('backup_rapor_' + (U.admin ? 'semua' : sid(U.name)) + '_' + today() + '.json', 'application/json', JSON.stringify({ app: 'gxr', at: Date.now(), data: d }));
+};
+A.sync = function () { fbInit(); flush(); toast(navigator.onLine ? 'Sinkronisasi dimulai' : 'Sedang offline', navigator.onLine ? 'ok' : 'err'); };
+A.restore = function () {
+  var f = document.getElementById('gx-rf').files[0]; if (!f) return toast('Pilih file backup', 'err');
+  if (!cf2('Restore data dari "' + f.name + '"? Data saat ini dapat tertimpa.')) return;
+  var r = new FileReader(); r.onload = function () {
+    try { var j = JSON.parse(r.result), d = j.data || j, n = 0; COLS.forEach(function (c) { if (!d[c]) return; if (!U.admin && c !== 'journals' && c !== 'assess' && c !== 'extras') return; Object.keys(d[c]).forEach(function (id) { var x = d[c][id]; if (!U.admin && x.teacher !== U.name) return; x.id = x.id || id; var l = D[c][id]; if (!l || (x.updatedAt || 0) >= (l.updatedAt || 0)) { D[c][id] = x; x.updatedAt = Date.now(); QQ[c + '/' + id] = 1; n++; } }); });
+      save(); saveQ(); flush(); render(); toast(n + ' data dipulihkan', 'ok'); } catch (e) { toast('File tidak valid', 'err'); }
+  }; r.readAsText(f);
+};
+function wipe(cols, fil) { cols.forEach(function (c) { list(c).forEach(function (x) { if (!fil || fil(x)) { x.deleted = true; x.updatedAt = Date.now(); x.by = U.name; QQ[c + '/' + x.id] = 1; } }); }); save(); saveQ(); flush(); render(); toast('Data dihapus', 'ok'); }
+A.rstEkstraK = function () { var r = rstK(); if (r && cf2('Hapus ekstrakurikuler kelas ' + r.k + '?')) wipe(['extras'], function(x) { return x.kelas === r.k && (!r.mine || x.teacher === U.name); }); };
+function rstK() {
+  var k = val('rs-k'), m = val('rs-m'); if (!k) { toast('Pilih kelas dulu', 'err'); return null; }
+  st.rsk = k; st.rsm2 = m; return { k: k, m: m, mine: !U.admin };
+}
+A.rstJurnalK = function () { var r = rstK(); if (r && cf2('Hapus SEMUA jurnal & presensi kelas ' + r.k + (r.mine ? ' milik Anda' : '') + '?')) wipe(['journals'], function (x) { return x.kelas === r.k && (!r.mine || x.teacher === U.name); }); };
+A.rstNilaiK = function () { var r = rstK(); if (r && cf2('Hapus penilaian kelas ' + r.k + (r.m ? ' mapel ' + r.m : ' (semua mapel)') + (r.mine ? ' milik Anda' : '') + '?')) wipe(['assess'], function (x) { return x.kelas === r.k && (!r.m || x.mapel === r.m) && (!r.mine || x.teacher === U.name); }); };
+A.rstHadirK = function () { var r = rstK(); if (r && cf2('Hapus data kehadiran & sikap kelas ' + r.k + '?')) wipe(['attitudes'], function (x) { return x.kelas === r.k; }); };
+A.rstMine = function () { if (cf2('Hapus SEMUA jurnal dan penilaian milik Anda?')) wipe(['journals', 'assess', 'extras'], function (x) { return x.teacher === U.name; }); };
+A.rstNilai = function () { if (cf2('Hapus SEMUA jurnal, kehadiran, dan penilaian seluruh guru?')) wipe(['journals', 'assess', 'attitudes', 'extras']); };
+A.rstAll = function () { if (cf2('RESET TOTAL: hapus siswa, guru, jurnal, kehadiran, nilai?')) wipe(['students', 'teachers', 'journals', 'assess', 'attitudes', 'extras']); };
+A.rstLocal = function () { var n = Object.keys(QQ).length; if (!cf2('Bersihkan cache lokal di browser ini?' + (n ? '\nPERINGATAN: ' + n + ' data belum terkirim ke server dan akan hilang!' : '\nData akan diambil ulang dari server.'))) return; localStorage.removeItem(K); localStorage.removeItem(QK); location.reload(); };
+A.chPw = async function () {
+  var o = document.getElementById('a-o').value, a = document.getElementById('a-n1').value;
+  if (a.length < 4 || a !== document.getElementById('a-n2').value) return toast('Password baru tidak valid / tidak sama', 'err');
+  if (U.admin) {
+    var ap = S().adminPass; if (ap ? ap !== await hash(o) : o !== 'admin') return toast('Password lama salah', 'err');
+    if (!cf2('Ganti password admin?')) return; var s = S(); s.adminPass = await hash(a); put('settings', s); toast('Password admin diganti', 'ok'); return render();
+  }
+  var t = list('teachers').filter(function (x) { return x.name === U.name; })[0]; if (!t) return;
+  if (t.pass !== await hash(o)) return toast('Password lama salah', 'err');
+  if (!cf2('Ganti password?')) return; t.pass = await hash(a); put('teachers', t); toast('Password diganti', 'ok'); render();
+};
+var C = {
+  tpPick: function(e) { st.tpDraft = st.tpDraft || {}; st.tpDraft[e.value] = e.checked; if (st.page === 'nilai') nStat(); else { var r = rekapData(); qa('#gx-rt .cp').forEach(function(td) { td.textContent = capai(r.al,td.getAttribute('data-sid')); }); } },
+  xk: function(e) { st.xk = e.value; st.xid = ''; render(); }, xid: function(e) { st.xid = e.value; render(); },
+  ek: function (e) { st.ek = e.value; render(); }, pk: function (e) { st.pk = e.value; render(); }, hk: function (e) { st.hk = e.value; st.hSource = null; render(); },
+  nk: function (e) { st.nk = e.value; st.na = ''; st.nm = ''; render(); }, nm: function (e) { st.nm = e.value; st.na = ''; render(); }, na: function (e) { st.na = e.value; render(); },
+  rk: function (e) { st.rk = e.value; render(); }, rm: function (e) { st.rm = e.value; render(); }, rall: function (e) { st.rall = e.checked; render(); },
+  kk: function (e) { st.kk = e.value; render(); }, ksrc: function (e) { st.ksrc = e.value; render(); }, kkm: function (e) { st.kkm = +e.value || 0; render(); }, kmx: function (e) { st.kmx = +e.value || 100; render(); }, kmd: function (e) { st.kmd = e.value; render(); },
+  pk2: function (e) { st.pk2 = e.value; st.rs = ''; render(); }, rprev: function () { rPrev(); },
+  lmode: function(e) { st.lmode = e.value; render(); }, lk: function(e) { st.lk = e.value; lPrev(); }, lyear: function(e) { st.lyear = e.value; lPrev(); },
+  lmany: function(e) { st.lmany = st.lmany || []; st.lmany = st.lmany.filter(function(k) { return k !== e.value; }); if (e.checked) st.lmany.push(e.value); lPrev(); },
+  lcol: function(e) { st.lcol = st.lcol || {}; st.lcol[e.value] = e.checked; lPrev(); },
+  ldec: function(e) { st.ldec = e.checked; lPrev(); },
+  rgroup: function(e) { st.rgroup = e.checked; rPrev(); },
+  rcol: function (e) { st.rcol = st.rcol || {}; st.rcol[e.value] = e.checked; rPrev(); },
+  ab: function (e) { if (e.checked) e.closest('tr').querySelectorAll('.gx-ab').forEach(function (x) { if (x !== e) x.checked = false; }); }
+};
+var I = { flt: function (e) { filterRows(e, e.getAttribute('data-t')); }, nStat: function () { nStat(); } };
+ROOT.addEventListener('click', function (ev) { var el = ev.target.closest('[data-a]'); if (!el || !ROOT.contains(el)) return; var f = A[el.getAttribute('data-a')]; if (f) { ev.preventDefault(); if (el.getAttribute('data-a') === 'go' && q('.gx-side.open')) A.menu(); f(el, ev); } });
+ROOT.addEventListener('change', function (ev) { var el = ev.target, f = el.getAttribute && C[el.getAttribute('data-c')]; if (f) f(el, ev); });
+ROOT.addEventListener('input', function (ev) { var el = ev.target; if (st.page === 'hadir' && el.getAttribute('data-f') !== 'sikap' && el.closest('#gx-ht')) st.hSource = 'manual'; var f = el.getAttribute && I[el.getAttribute('data-i')]; if (f) f(el, ev); });
+ROOT.addEventListener('keydown', function (ev) { if (ev.key === 'Enter' && ev.target.id === 'gx-lp') A.login(); });
+
+render(); fbInit();
+})();
+//]]>
+</script>
+</body>
+</html>
