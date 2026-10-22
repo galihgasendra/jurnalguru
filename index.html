@@ -87,6 +87,11 @@
 #gxapp .gx-leger .bt tr{break-inside:avoid}
 #gxapp .gx-legend{margin-top:12px;font-size:11px}
 @page gxleger{size:A4 landscape;margin:8mm}
+#gxapp .gx-modal{position:fixed;inset:0;z-index:98;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:16px}
+#gxapp .gx-modal .gx-card{width:100%;max-width:420px;margin:0}
+#gxapp .gx-warn{background:#fff7ed;border:1px solid #fdba74;color:#9a3412;border-radius:12px;padding:12px 14px;font-weight:600}
+#gxapp .gx-rp .ttd{break-inside:avoid;page-break-inside:avoid}
+#gxapp .gx-rp .bt tr{break-inside:avoid;page-break-inside:avoid}
 @media(max-width:860px){
 #gxapp .gx-ham{display:block}
 #gxapp .gx-side{position:fixed;left:0;top:0;bottom:0;z-index:50;max-height:none;height:100vh;transform:translateX(-105%);transition:transform .25s;box-shadow:4px 0 20px rgba(0,0,0,.2)}
@@ -107,6 +112,7 @@ body *{visibility:hidden!important}
 #gx-print .gx-rp{border:0;margin:0;page-break-after:always;font-size:12px}
 #gx-print .gx-leger{page:gxleger;min-width:0;padding:0;font-size:10px}
 #gx-print .gx-rp:last-child{page-break-after:auto}
+#gx-print .gx-rp .ttd,#gx-print .gx-rp .ttd div{break-inside:avoid;page-break-inside:avoid}
 #glhgsd{display:none}
 }
 </style>
@@ -138,7 +144,9 @@ var GXR_FB = {
 
 };
 var SDK = 'https://www.gstatic.com/firebasejs/10.12.2/';
-var K = 'gxr_db_v1', QK = 'gxr_q_v1', SK = 'gxr_ses_v1', WK = 'gxr_wali_v1';
+var K = 'gxr_db_v1', QK = 'gxr_q_v1', SK = 'gxr_ses_v1', WK = 'gxr_wali_v1', LK = 'gxr_ls_v1';
+var LS = (function () { try { return JSON.parse(localStorage.getItem('gxr_ls_v1')) || {}; } catch (e) { return {}; } })(), pulling = false;
+var NISN_ST = ' style="mso-number-format:\'\\@\'"';
 var SUBJ = ['Pendidikan Agama dan Budi Pekerti','Pendidikan Pancasila','Bahasa Indonesia','Matematika','Ilmu Pengetahuan Alam','Ilmu Pengetahuan Sosial','Bahasa Inggris','Seni Budaya dan Prakarya','Pendidikan Jasmani Olahraga dan Kesehatan','Informatika','Muatan Lokal'];
 var JENIS = ['Tugas Harian','Ulangan Harian','Praktik/Kinerja','Proyek','Portofolio','Sumatif Tengah Semester','Sumatif Akhir Semester'];
 var HARI = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
@@ -166,7 +174,7 @@ function toast(m, t) { var o = q('.gx-toast'); if (o) o.remove(); var d = docume
 function opt(arr, sel, all) { return (all ? '<option value="">' + E(all) + '</option>' : '') + arr.map(function (o) { var v = typeof o === 'object' ? o.v : o, l = typeof o === 'object' ? o.l : o; return '<option value="' + E(v) + '"' + (String(v) === String(sel) ? ' selected' : '') + '>' + E(l) + '</option>'; }).join(''); }
 function dl(name, mime, content) { var b = new Blob([content], { type: mime }); var a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = name; document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 500); }
 function xls(name, head, rows, title) {
-  var h = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="utf-8"></head><body>' + (title ? '<h3>' + E(title) + '</h3>' : '') + '<table border="1"><tr>' + head.map(function (x) { return '<th style="background:#d9efec">' + E(x) + '</th>'; }).join('') + '</tr>' + rows.map(function (r) { return '<tr>' + r.map(function (x) { return '<td>' + E(x) + '</td>'; }).join('') + '</tr>'; }).join('') + '</table></body></html>';
+  var h = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="utf-8"></head><body>' + (title ? '<h3>' + E(title) + '</h3>' : '') + '<table border="1"><tr>' + head.map(function (x) { return '<th style="background:#d9efec">' + E(x) + '</th>'; }).join('') + '</tr>' + rows.map(function (r) { return '<tr>' + r.map(function (x, i) { return '<td' + (head[i] === 'NISN' ? NISN_ST : '') + '>' + E(x) + '</td>'; }).join('') + '</tr>'; }).join('') + '</table></body></html>';
   dl(name + '.xls', 'application/vnd.ms-excel', '\ufeff' + h);
 }
 function tabHtml(title, head, rows) {
@@ -175,10 +183,120 @@ function tabHtml(title, head, rows) {
     '<table><thead><tr>' + head.map(function (x) { return '<th>' + E(x) + '</th>'; }).join('') + '</tr></thead><tbody>' + rows.map(function (r) { return '<tr>' + r.map(function (x) { return '<td>' + E(x) + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody></table></body></html>';
 }
 function printTab(title, head, rows) { var w = window.open('', '_blank'); if (!w) return toast('Izinkan pop-up untuk mencetak', 'err'); w.document.write(tabHtml(title, head, rows)); w.document.close(); w.focus(); setTimeout(function () { w.print(); }, 400); }
-function pdfTab(name, title, head, rows) {
-  var go = function () { var el = document.createElement('div'); el.innerHTML = tabHtml(title, head, rows); document.body.appendChild(el); html2pdf().set({ filename: name + '.pdf', margin: 8, jsPDF: { orientation: head.length > 7 ? 'landscape' : 'portrait' } }).from(el).save().then(function () { el.remove(); }); };
-  if (window.html2pdf) return go(); if (!navigator.onLine) { toast('Offline: gunakan Print lalu Simpan sebagai PDF'); return printTab(title, head, rows); }
-  toast('Menyiapkan PDF...'); loadJs('https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js', go, function () { printTab(title, head, rows); });
+function pdfTab(name, title, head, rows) { truePdf({ html: tabHtml(title, head, rows), name: name, orient: head.length > 7 ? 'l' : 'p', margin: 10, fallback: function () { printTab(title, head, rows); } }); }
+
+/* ---------- PDF berbasis teks (editable, bukan gambar) ---------- */
+var PAPER = { A4: [210, 297], F4: [215, 330], Letter: [215.9, 279.4], Legal: [215.9, 355.6] }, PXMM = 96 / 25.4;
+function appDoc(inner) {
+  var css = (document.querySelector('style') || {}).textContent || '';
+  return '<!doctype html><html><head><meta charset="utf-8"><style>' + css + '\nhtml,body{margin:0;background:#fff}#gxapp{min-height:0!important;background:#fff!important}#gx-print .gx-rp{border:0;margin:0;font-size:12px}#gx-print .gx-leger{min-width:0;padding:0;font-size:10px}</style></head><body><div id="gxapp"><div id="gx-print" class="gx-print">' + inner + '</div></div></body></html>';
+}
+function pdfAsk(def, cb) {
+  var o = document.createElement('div'); o.className = 'gx-modal';
+  o.innerHTML = '<div class="gx-card"><h2>Export PDF</h2><div class="gx-g">' + F('Ukuran Kertas', '<select class="gx-in" id="pdf-sz">' + opt(Object.keys(PAPER), st.pdfSz || 'A4') + '</select>') + F('Orientasi', '<select class="gx-in" id="pdf-or">' + opt([{ v: 'p', l: 'Potret' }, { v: 'l', l: 'Lanskap' }], def) + '</select>') + '</div><div class="gx-row"><button class="gx-b" id="pdf-ok">📄 Buat PDF</button><button class="gx-b s" id="pdf-no">Batal</button></div></div>';
+  ROOT.appendChild(o);
+  o.querySelector('#pdf-no').onclick = function () { o.remove(); };
+  o.querySelector('#pdf-ok').onclick = function () { var sz = o.querySelector('#pdf-sz').value, or = o.querySelector('#pdf-or').value; st.pdfSz = sz; o.remove(); cb(sz, or); };
+}
+function truePdf(o) {
+  pdfAsk(o.orient, function (sz, or) {
+    var go = function () { toast('Menyiapkan PDF...'); buildPdf(o, sz, or).catch(function (e) { console.warn(e); toast('Gagal membuat PDF — gunakan Print', 'err'); }); };
+    if (window.jspdf && window.jspdf.jsPDF) return go();
+    if (!navigator.onLine) { toast('Offline: gunakan Print lalu Simpan sebagai PDF'); return o.fallback(); }
+    toast('Memuat modul PDF...'); loadJs('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js', function () { var n = 0, t = setInterval(function () { if ((window.jspdf && window.jspdf.jsPDF) || ++n > 50) { clearInterval(t); go(); } }, 100); }, function () { toast('Modul PDF gagal dimuat — gunakan Print', 'err'); o.fallback(); });
+  });
+}
+function pdfCol(v) { var m = String(v || '').match(/[\d.]+/g); if (!m || m.length < 3) return null; var a = m.length > 3 ? +m[3] : 1; return a > 0 ? [+m[0], +m[1], +m[2]] : null; }
+function pdfTxt(v) { return v.replace(/[\u2018\u2019]/g, "'").replace(/[\u201C\u201D]/g, '"').replace(/[\u2013\u2014\u2212]/g, '-').replace(/\u2022/g, '\u00B7').replace(/\u2026/g, '...').replace(/\u00A0/g, ' ').replace(/[^\x00-\xFF]/g, '?'); }
+function pdfFont(ff) { var f = String(ff || '').toLowerCase().split(',')[0]; if (/courier|mono/.test(f)) return 'courier'; if (/times|serif|georgia|cambria/.test(f) && !/sans/.test(f)) return 'times'; return 'helvetica'; }
+function imgData(src) {
+  return fetch(src, { mode: 'cors' }).then(function (r) { if (!r.ok) throw new Error('img'); return r.blob(); }).then(function (b) {
+    return new Promise(function (res) { var u = URL.createObjectURL(b), im = new Image(); im.onload = function () { var sc = Math.min(1, 400 / Math.max(im.naturalWidth, im.naturalHeight)), c = document.createElement('canvas'); c.width = Math.max(1, Math.round(im.naturalWidth * sc)); c.height = Math.max(1, Math.round(im.naturalHeight * sc)); c.getContext('2d').drawImage(im, 0, 0, c.width, c.height); URL.revokeObjectURL(u); try { res(c.toDataURL('image/png')); } catch (e) { res(null); } }; im.onerror = function () { res(null); }; im.src = u; });
+  }).catch(function () { return null; });
+}
+async function buildPdf(o, sz, or) {
+  var p = PAPER[sz] || PAPER.A4, pw = or === 'l' ? Math.max(p[0], p[1]) : Math.min(p[0], p[1]), ph = or === 'l' ? Math.min(p[0], p[1]) : Math.max(p[0], p[1]);
+  var m = o.margin, cw = pw - 2 * m, W = Math.floor(cw * PXMM), H = (ph - 2 * m) * PXMM, k = 1 / PXMM;
+  var fr = document.createElement('iframe'); fr.setAttribute('aria-hidden', 'true');
+  fr.style.cssText = 'position:fixed;left:-30000px;top:0;width:' + W + 'px;height:' + Math.ceil(H) + 'px;border:0;opacity:0;pointer-events:none';
+  document.body.appendChild(fr);
+  try {
+    var doc = fr.contentDocument, win = fr.contentWindow; doc.open(); doc.write(o.html); doc.close();
+    await new Promise(function (res) { var n = 0, t = setInterval(function () { n++; var ok = doc.readyState === 'complete' && Array.prototype.every.call(doc.images, function (i) { return i.complete; }); if (ok || n > 80) { clearInterval(t); res(); } }, 100); });
+    if (doc.fonts && doc.fonts.ready) await doc.fonts.ready;
+    var items = [], atoms = [], forced = [], tables = [], imgs = [], all = doc.body.querySelectorAll('*');
+    for (var i = 0; i < all.length; i++) {
+      var el = all[i], cs = win.getComputedStyle(el); if (cs.display === 'none' || cs.visibility === 'hidden') continue;
+      var r = el.getBoundingClientRect(); if (r.width <= 0 && r.height <= 0) continue;
+      var x = r.left, y = r.top, w = r.width, h = r.height, tg = el.tagName;
+      var bg = pdfCol(cs.backgroundColor); if (bg && !(bg[0] > 250 && bg[1] > 250 && bg[2] > 250)) items.push({ t: 0, x: x, y: y, w: w, h: h, c: bg });
+      var coll = cs.borderCollapse === 'collapse' && (tg === 'TD' || tg === 'TH');
+      ['Top', 'Right', 'Bottom', 'Left'].forEach(function (sd) {
+        var bw = parseFloat(cs['border' + sd + 'Width']) || 0, bs = cs['border' + sd + 'Style'], bc = pdfCol(cs['border' + sd + 'Color']);
+        if (bw <= 0 || bs === 'none' || bs === 'hidden' || !bc) return;
+        (bs === 'double' && bw >= 3 ? [[0, bw / 3], [bw * 2 / 3, bw]] : [[0, bw]]).forEach(function (pt) {
+          var a = coll ? pt[0] - bw / 2 : pt[0], b = coll ? pt[1] - bw / 2 : pt[1], th = Math.max(b - a, 0.75);
+          if (sd === 'Top') items.push({ t: 1, x: x, y: y + a, w: w, h: th, c: bc });
+          else if (sd === 'Bottom') items.push({ t: 1, x: x, y: y + h - b, w: w, h: th, c: bc });
+          else if (sd === 'Left') items.push({ t: 1, x: x + a, y: y, w: th, h: h, c: bc });
+          else items.push({ t: 1, x: x + w - b, y: y, w: th, h: h, c: bc });
+        });
+      });
+      if (tg === 'IMG' && el.currentSrc) imgs.push({ x: x, y: y, w: w, h: h, src: el.currentSrc, nw: el.naturalWidth, nh: el.naturalHeight, fit: cs.objectFit });
+      if (/^(TR|IMG|H1|H2|H3|H4|H5|P|LI)$/.test(tg) || el.classList.contains('ttd') || el.classList.contains('kop')) atoms.push([y, y + h]);
+      if (o.breakSel && el.matches(o.breakSel)) forced.push(y);
+      if (tg === 'TABLE' && el.tHead) { var hr = el.tHead.getBoundingClientRect(); if (hr.height > 0 && hr.height < H / 3) tables.push({ y0: y, y1: y + h, h0: hr.top, h1: hr.bottom }); }
+    }
+    var tw = doc.createTreeWalker(doc.body, 4), nd, rg = doc.createRange();
+    while ((nd = tw.nextNode())) {
+      var pe = nd.parentElement; if (!pe || /^(STYLE|SCRIPT|TITLE)$/.test(pe.tagName)) continue;
+      var pc = win.getComputedStyle(pe); if (pc.visibility === 'hidden' || pc.display === 'none') continue;
+      var fs = parseFloat(pc.fontSize) || 12, wt = parseInt(pc.fontWeight, 10) || 400, it = pc.fontStyle === 'italic' || pc.fontStyle === 'oblique';
+      var fst = wt >= 600 ? (it ? 'bolditalic' : 'bold') : (it ? 'italic' : 'normal'), fam = pdfFont(pc.fontFamily), col = pdfCol(pc.color) || [0, 0, 0], un = false;
+      for (var an = pe, dd = 0; an && dd < 6 && an !== doc.body; an = an.parentElement, dd++) { if (an.tagName === 'U' || /underline/.test(win.getComputedStyle(an).textDecorationLine || '')) { un = true; break; } }
+      var re = /\S+/g, mt, tx = nd.data;
+      while ((mt = re.exec(tx))) {
+        rg.setStart(nd, mt.index); rg.setEnd(nd, mt.index + mt[0].length); var rs = rg.getClientRects(); if (!rs.length) continue; var rr = rs[0];
+        items.push({ t: 3, x: rr.left, y: rr.top, w: rr.width, h: rr.height, s: pdfTxt(mt[0]), fs: fs, f: fam, st: fst, c: col, u: un });
+      }
+    }
+    var total = Math.max(doc.documentElement.scrollHeight, doc.body.scrollHeight);
+    forced = forced.filter(function (v) { return v > 1; }).sort(function (a, b) { return a - b; });
+    var pages = [], y0 = 0, guard = 0;
+    while (y0 < total - 1 && guard++ < 3000) {
+      var hd = null; if (y0 > 0) tables.forEach(function (t) { if (y0 >= t.h1 - 0.5 && y0 < t.y1 - 1) hd = t; });
+      var end = y0 + H - (hd ? hd.h1 - hd.h0 : 0);
+      for (var fi = 0; fi < forced.length; fi++) if (forced[fi] > y0 + 1 && forced[fi] < end) { end = forced[fi]; break; }
+      var moved = true; while (moved) { moved = false; for (var ai = 0; ai < atoms.length; ai++) { var at = atoms[ai]; if (at[0] < end - 0.5 && at[1] > end + 0.5 && at[0] > y0 + 0.5) { end = at[0]; moved = true; } } }
+      if (end > total) end = total;
+      pages.push({ a: y0, b: end, hd: hd }); y0 = end;
+    }
+    var cache = {}; for (var ii = 0; ii < imgs.length; ii++) if (!(imgs[ii].src in cache)) cache[imgs[ii].src] = await imgData(imgs[ii].src);
+    var J = new window.jspdf.jsPDF({ orientation: or === 'l' ? 'landscape' : 'portrait', unit: 'mm', format: [pw, ph], compress: true });
+    J.setProperties({ title: o.name, creator: 'Aplikasi Rapor Siswa' });
+    var region = function (a, b, dest) {
+      J.saveGraphicsState(); J.rect(0, dest - 0.4, pw, (b - a) * k + 0.8, null); J.clip(); J.discardPath();
+      var Y = function (v) { return dest + (v - a) * k; }, X = function (v) { return m + v * k; }, inR = function (q2) { return q2.y < b && q2.y + q2.h > a; };
+      [0, 1].forEach(function (tp) { items.forEach(function (q2) { if (q2.t !== tp || !inR(q2)) return; J.setFillColor(q2.c[0], q2.c[1], q2.c[2]); J.rect(X(q2.x), Y(q2.y), q2.w * k, q2.h * k, 'F'); }); });
+      imgs.forEach(function (q2) { if (!inR(q2) || !cache[q2.src]) return; var dw = q2.w, dh = q2.h, ox = 0, oy = 0; if (q2.fit === 'contain' && q2.nw && q2.nh) { var sc = Math.min(q2.w / q2.nw, q2.h / q2.nh); dw = q2.nw * sc; dh = q2.nh * sc; ox = (q2.w - dw) / 2; oy = (q2.h - dh) / 2; } try { J.addImage(cache[q2.src], 'PNG', X(q2.x + ox), Y(q2.y + oy), dw * k, dh * k, undefined, 'FAST'); } catch (e) {} });
+      var lu = null;
+      items.forEach(function (q2) {
+        if (q2.t !== 3) return; var cy = q2.y + q2.h / 2; if (cy < a || cy >= b) return;
+        J.setFont(q2.f, q2.st); J.setFontSize(q2.fs * 0.75); J.setTextColor(q2.c[0], q2.c[1], q2.c[2]);
+        var bl = Y(q2.y + q2.h * 0.81); J.text(q2.s, X(q2.x), bl);
+        if (q2.u) { var uy = bl + q2.fs * k * 0.12, x1 = q2.x; if (lu && Math.abs(lu.y - q2.y) < 1 && q2.x - lu.e < q2.fs) x1 = lu.e; J.setDrawColor(q2.c[0], q2.c[1], q2.c[2]); J.setLineWidth(Math.max(0.15, q2.fs * k * 0.06)); J.line(X(x1), uy, X(q2.x + q2.w), uy); lu = { y: q2.y, e: q2.x + q2.w }; } else lu = null;
+      });
+      J.restoreGraphicsState();
+    };
+    var drawn = 0;
+    pages.forEach(function (pg) {
+      if (!items.some(function (q2) { return q2.t >= 1 && q2.y < pg.b && q2.y + q2.h > pg.a; })) return;
+      if (drawn++) J.addPage([pw, ph], or === 'l' ? 'landscape' : 'portrait');
+      var dest = m; if (pg.hd) { region(pg.hd.h0, pg.hd.h1, m); dest = m + (pg.hd.h1 - pg.hd.h0) * k; }
+      region(pg.a, pg.b, dest);
+    });
+    J.save(o.name + '.pdf'); toast('PDF tersimpan (' + drawn + ' halaman)', 'ok');
+  } finally { fr.remove(); }
 }
 async function hash(s) {
   s = 'gxr#' + s;
@@ -206,43 +324,53 @@ function fbInit() {
   fbBusy = true; var fail = function () { fbBusy = false; stat(); };
   loadJs(SDK + 'firebase-app-compat.js', function () {
     loadJs(SDK + 'firebase-firestore-compat.js', function () {
-      try { var fb = window.firebase; var app = fb.apps.length ? fb.app() : fb.initializeApp(cfg()); fdb = app.firestore(); listen(); flush(); } catch (e) { console.warn(e); }
+      try { var fb = window.firebase; var app = fb.apps.length ? fb.app() : fb.initializeApp(cfg()); fdb = app.firestore(); pull(); flush(); } catch (e) { console.warn(e); }
       fbBusy = false; stat();
     }, fail);
   }, fail);
 }
-function listen() {
-  COLS.forEach(function (c) {
-    fdb.collection('gxr_' + c).onSnapshot(function (snap) {
-      var ch = 0;
-      snap.docChanges().forEach(function (x) { var d = x.doc.data(); if (!d || !d.id) return; var l = D[c][d.id]; if (!l || (d.updatedAt || 0) > (l.updatedAt || 0)) { if (!QQ[c + '/' + d.id] || !l || d.updatedAt > l.updatedAt) { D[c][d.id] = d; ch++; } } });
-      if (ch) { save(); if (!U) render(); else if (st.page === 'dash') render(); }
-    }, function (e) { console.warn('listen', c, e); stat('Firebase ditolak (cek rules)'); });
+/* Hemat kuota read: tanpa onSnapshot. Data disimpan di cache lokal; dari server hanya diambil
+   dokumen yang berubah sejak sinkronisasi terakhir (berdasarkan stempel waktu server "srvAt"). */
+function saveLS() { try { localStorage.setItem(LK, JSON.stringify(LS)); } catch (e) {} }
+function pull(force, cb) {
+  if (!fdb || !navigator.onLine || pulling) { if (cb) cb(false, 0, 0); stat(); return; }
+  pulling = true; stat(); var FS = window.firebase.firestore, ch = 0, err = 0;
+  Promise.all(COLS.map(function (c) {
+    var ref = fdb.collection('gxr_' + c), qy = LS[c] ? ref.where('srvAt', '>=', FS.Timestamp.fromMillis(LS[c])) : ref;
+    return qy.get().then(function (snap) {
+      var mx = LS[c] || 0;
+      snap.forEach(function (doc) { var d = doc.data(); if (!d) return; var sa = d.srvAt && d.srvAt.toMillis ? d.srvAt.toMillis() : 0; if (sa > mx) mx = sa; delete d.srvAt; d.id = d.id || doc.id; var l = D[c][d.id]; if (!l || (d.updatedAt || 0) > (l.updatedAt || 0)) { D[c][d.id] = d; ch++; } });
+      LS[c] = mx || 1;
+    }).catch(function (e) { err++; console.warn('pull', c, e); });
+  })).then(function () {
+    pulling = false; LS._at = Date.now(); saveLS(); if (ch) save(); stat(err ? 'Firebase ditolak (cek rules)' : '');
+    if (ch && (!U || st.page === 'dash' || force)) render(); if (cb) cb(true, ch, err);
   });
 }
 function flush() {
   if (!fdb || !navigator.onLine || flushing) { stat(); return; }
   var keys = Object.keys(QQ); if (!keys.length) { stat(); return; }
-  flushing = true; stat();
+  flushing = true; stat(); var TS = window.firebase.firestore.FieldValue.serverTimestamp();
   Promise.all(keys.map(function (k) {
-    var i = k.indexOf('/'), c = k.slice(0, i), id = k.slice(i + 1), loc = D[c][id];
+    var i = k.indexOf('/'), c = k.slice(0, i), id = k.slice(i + 1), loc = D[c] && D[c][id];
     if (!loc) { delete QQ[k]; return null; }
-    var ref = fdb.collection('gxr_' + c).doc(id), data = JSON.parse(JSON.stringify(loc));
-    return fdb.runTransaction(function (t) {
-      return t.get(ref).then(function (s) { var r = s.exists ? s.data() : null; if (r && (r.updatedAt || 0) > (data.updatedAt || 0)) return r; t.set(ref, data); return null; });
-    }).then(function (r) { if (r) { D[c][id] = r; save(); } delete QQ[k]; }).catch(function (e) { console.warn('sync', k, e); });
+    var data = JSON.parse(JSON.stringify(loc)); data.srvAt = TS;
+    return fdb.collection('gxr_' + c).doc(id).set(data).then(function () { delete QQ[k]; }).catch(function (e) { console.warn('sync', k, e); });
   })).then(function () { flushing = false; saveQ(); });
 }
 function stat(msg) {
   var e = q('.gx-st'); if (!e) return; var n = Object.keys(QQ).length;
   if (!navigator.onLine) { e.className = 'gx-st off'; e.textContent = 'Offline • ' + n + ' antre'; }
   else if (!fdb) { e.className = 'gx-st pd'; e.textContent = msg || (cfg().apiKey ? 'Menghubungkan...' : 'Lokal (Firebase belum diatur)'); }
+  else if (msg) { e.className = 'gx-st off'; e.textContent = msg; }
+  else if (pulling) { e.className = 'gx-st pd'; e.textContent = 'Mengambil data...'; }
   else if (n) { e.className = 'gx-st pd'; e.textContent = 'Sinkron ' + n + '...'; }
   else { e.className = 'gx-st on'; e.textContent = 'Online • tersinkron'; }
 }
-window.addEventListener('online', function () { fbInit(); flush(); stat(); });
+window.addEventListener('online', function () { if (fdb) pull(); fbInit(); flush(); stat(); });
 window.addEventListener('offline', function () { stat(); });
 setInterval(function () { if (navigator.onLine) { if (!fdb) fbInit(); else flush(); } }, 20000);
+setInterval(function () { if (navigator.onLine && fdb && U && document.visibilityState === 'visible') pull(); }, 600000);
 
 /* ---------- data helper ---------- */
 function classes() { var s = {}; list('students').forEach(function (x) { if (x.kelas) s[x.kelas] = 1; }); return Object.keys(s).sort(function (a, b) { return a.localeCompare(b, 'id', { numeric: true }); }); }
@@ -309,7 +437,7 @@ function filterRows(inp, tb) { var t = inp.value.toLowerCase(); qa('#' + tb + ' 
 var MENU = [
   ['dash', '🏠', 'Beranda'],
   ['#Admin'], ['sekolah', '🏫', 'Pengaturan Sekolah', 1], ['siswaIn', '➕', 'Input Siswa', 1], ['siswaEd', '✏️', 'Edit Data Siswa', 1], ['guru', '👩‍🏫', 'Data Guru', 1],
-  ['#Guru'], ['presensi', '✅', 'Presensi & Jurnal'], ['jurnal', '📒', 'Jurnal Mengajar'], ['hadir', '🙋', 'Kehadiran & Sikap'], ['nilai', '📝', 'Input Penilaian'], ['ekstra', '🏅', 'Nilai Ekstrakurikuler'], ['rekap', '📊', 'Rekap Nilai'], ['katrol', '📈', 'Katrol Nilai'], ['rapor', '🖨️', 'Cetak Rapor'], ['leger', '📋', 'Leger'],
+  ['#Guru'], ['presensi', '✅', 'Presensi & Jurnal'], ['jurnal', '📒', 'Jurnal Mengajar'], ['hadir', '🙋', 'Kehadiran & Sikap'], ['rekapHadir', '🗓️', 'Rekap Kehadiran'], ['nilai', '📝', 'Input Penilaian'], ['ekstra', '🏅', 'Nilai Ekstrakurikuler'], ['rekap', '📊', 'Rekap Nilai'], ['katrol', '📈', 'Katrol Nilai'], ['rapor', '🖨️', 'Cetak Rapor'], ['leger', '📋', 'Leger'],
   ['#Sistem'], ['data', '💾', 'Backup & Restore'], ['akun', '🔑', 'Akun'], ['logout', '🚪', 'Keluar']
 ];
 function render() {
@@ -345,9 +473,42 @@ function noCls() { return card('Belum ada data kelas', '<p class="gx-muted">Admi
 
 P.dash = function () {
   var mine = U.admin ? list('journals') : list('journals').filter(function (j) { return j.teacher === U.name; });
+  var am = U.admin ? null : ampuOf(U.name), amk = am ? Object.keys(am).filter(function (k) { return am[k] && am[k].length; }).sort(function (a, b) { return a.localeCompare(b, 'id', { numeric: true }); }) : [];
+  var info = U.admin ? '' : amk.length ? card('Kelas &amp; Mapel yang Saya Ampu', '<div class="gx-tw" style="margin-top:0"><table class="gx-t" style="min-width:0"><thead><tr><th>Kelas</th><th>Mata Pelajaran</th></tr></thead><tbody>' + amk.map(function (k) { return '<tr><td style="white-space:nowrap"><b>' + E(k) + '</b></td><td>' + E(am[k].join(', ')) + '</td></tr>'; }).join('') + '</tbody></table></div><div class="gx-row"><button class="gx-b s" data-a="go" data-p="akun">✏️ Ubah di Halaman Akun</button></div>')
+    : card('', '<div class="gx-warn">Untuk memudahkan pengisian data, silahkan memilih kelas dan mata pelajaran yang di ampu, pada halaman Akun</div><div class="gx-row"><button class="gx-b" data-a="go" data-p="akun">🔑 Buka Halaman Akun</button></div>');
   return card('Selamat datang, ' + E(U.name), '<div class="gx-dash">' +
     [['Siswa', list('students').length], ['Kelas', classes().length], ['Guru', list('teachers').length], ['Jurnal saya', mine.length], ['Penilaian saya', asOf('', '', true).length], ['Antrean sinkron', Object.keys(QQ).length]].map(function (x) { return '<div class="gx-stat"><small>' + x[0] + '</small><b>' + x[1] + '</b></div>'; }).join('') +
-    '</div><p class="gx-muted" style="margin-top:12px">Data tersimpan di browser ini dan otomatis terkirim ke Firebase saat online. Saat offline, data diantrekan dan dikirim begitu internet tersedia.</p>' + (!cfg().apiKey ? '<p class="gx-tag no">Firebase apiKey belum diisi — data hanya lokal.</p>' : ''));
+    '</div><p class="gx-muted" style="margin-top:12px">Data tersimpan di browser ini dan otomatis terkirim ke Firebase saat online. Saat offline, data diantrekan dan dikirim begitu internet tersedia. Data dari perangkat lain diambil saat aplikasi dibuka atau saat menekan "Sinkronkan Sekarang" (hanya data yang berubah, agar hemat kuota).</p>' + (!cfg().apiKey ? '<p class="gx-tag no">Firebase apiKey belum diisi — data hanya lokal.</p>' : '') +
+    '<div class="gx-row"><button class="gx-b s" data-a="sync">🔄 Sinkronkan Sekarang</button><span class="gx-muted">Terakhir sinkron: ' + (LS._at ? E(new Date(LS._at).toLocaleString('id-ID')) : 'belum') + '</span></div>') + info;
+};
+
+/* ---------- rekap kehadiran ---------- */
+var RHHEAD = ['Kelas', 'Jumlah Siswa', 'Hadir', 'Izin', 'Sakit', 'Alpa', '% Hadir', '% Tidak Hadir'];
+function rhRead() { var f = document.getElementById('rh-f'), t = document.getElementById('rh-t'); if (f && t) { st.rhf = f.value; st.rht = t.value; } }
+function rhData() {
+  var f = st.rhf || today(), t = st.rht || today(); if (t < f) { var z = f; f = t; t = z; }
+  var rank = { A: 1, I: 2, S: 3 }, rows = [], T = { n: 0, tot: 0, h: 0, i: 0, s: 0, a: 0 }, js = list('journals');
+  var pc = function (v, tot) { return tot ? r2(v / tot * 100) + '%' : '-'; };
+  classes().forEach(function (k) {
+    var ss = stuOf(k), ids = {}, days = {}, mk = {}, c = { S: 0, I: 0, A: 0 }; ss.forEach(function (s) { ids[s.id] = 1; });
+    js.forEach(function (j) { if (j.kelas !== k || !j.date || j.date < f || j.date > t) return; days[j.date] = 1; Object.keys(j.abs || {}).forEach(function (s) { var x = j.abs[s]; if (!ids[s] || !rank[x]) return; var key = j.date + '|' + s; if (!mk[key] || rank[x] > rank[mk[key]]) mk[key] = x; }); });
+    Object.keys(mk).forEach(function (x) { c[mk[x]]++; });
+    var tot = Object.keys(days).length * ss.length, h = tot - c.S - c.I - c.A;
+    T.n += ss.length; T.tot += tot; T.h += h; T.i += c.I; T.s += c.S; T.a += c.A;
+    rows.push([k, ss.length, h, c.I, c.S, c.A, pc(h, tot), pc(tot - h, tot)]);
+  });
+  rows.push(['Jumlah', T.n, T.h, T.i, T.s, T.a, pc(T.h, T.tot), pc(T.tot - T.h, T.tot)]);
+  return { f: f, t: t, rows: rows };
+}
+function rhTitle() { var d = rhData(); return 'Rekapitulasi Kehadiran Siswa ' + (d.f === d.t ? fmtD(d.f) : fmtD(d.f) + ' s.d. ' + fmtD(d.t)); }
+P.rekapHadir = function () {
+  if (!classes().length) return noCls(); var d = rhData();
+  return card('Rekapitulasi Kehadiran Siswa', '<div class="gx-g">' + F('Dari tanggal', '<input class="gx-in" type="date" id="rh-f" value="' + E(d.f) + '">') + F('Sampai tanggal', '<input class="gx-in" type="date" id="rh-t" value="' + E(d.t) + '">') + '</div>' +
+    '<div class="gx-row"><button class="gx-b" data-a="rhRef">🔄 Tampilkan</button><button class="gx-b s" data-a="rhToday">📅 Hari Ini</button><button class="gx-b g" data-a="rhXls">📗 Excel</button><button class="gx-b s" data-a="rhPrint">🖨️ Print</button><button class="gx-b r" data-a="rhPdf">📕 PDF</button></div>' +
+    '<p class="gx-muted">Periode: <b>' + E(d.f === d.t ? fmtD(d.f) : fmtD(d.f) + ' s.d. ' + fmtD(d.t)) + '</b></p>' +
+    '<div class="gx-tw"><table class="gx-t"><thead><tr>' + RHHEAD.map(function (x) { return '<th>' + x + '</th>'; }).join('') + '</tr></thead><tbody>' +
+    d.rows.map(function (r, i) { var last = i === d.rows.length - 1; return '<tr>' + r.map(function (v) { return '<td>' + (last ? '<b>' + E(v) + '</b>' : E(v)) + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody></table></div>' +
+    '<p class="gx-muted">Diambil dari jurnal semua guru. Kehadiran dihitung per siswa per hari: beberapa jurnal di kelas dan tanggal yang sama dihitung satu kali (jika status berbeda, prioritas Sakit, Izin, lalu Alpa). Hari yang dihitung adalah tanggal yang memiliki jurnal.</p>');
 };
 
 P.sekolah = function () {
@@ -468,8 +629,8 @@ P.rekap = function () {
   var al = r.al, all = !!st.rall, ss = stuOf(r.k), nas = ss.map(function (s) { return na(al, s.id); }).filter(function (v) { return v != null; });
   return card('Rekap Nilai', '<div class="gx-g">' + F('Kelas', '<select class="gx-in" data-c="rk">' + opt(r.ks, r.k) + '</select>') + F('Mata Pelajaran', '<select class="gx-in" data-c="rm">' + opt(r.ms, r.m) + '</select>') + F('Cari nama siswa', '<input class="gx-in" data-i="flt" data-t="gx-rt">') + '</div>' +
     '<div class="gx-row"><label class="gx-chk"><label><input type="checkbox" data-c="rall"' + (all ? ' checked' : '') + '> Tampilkan semua penilaian</label></label><button class="gx-b g" data-a="rXls">📗 Excel</button><button class="gx-b s" data-a="rPrint">🖨️ Print</button><button class="gx-b r" data-a="rPdf">📕 PDF</button></div>' +
-    '<h3 style="margin-top:14px">Daftar Penilaian &amp; Bobot</h3><div class="gx-tw"><table class="gx-t"><thead><tr><th>#</th><th>Tanggal</th><th>Jenis</th><th>Judul</th><th>TP</th><th>CP</th><th>KKM</th><th>Bobot</th></tr></thead><tbody>' +
-    al.map(function (a, i) { return '<tr><td>P' + (i + 1) + '</td><td>' + E(a.date) + '</td><td>' + E(a.jenis) + (a.final ? ' <span class="gx-tag ok">final</span>' : '') + '</td><td>' + E(a.judul) + '</td><td>' + E(a.tp || '-') + '</td><td>' + (!a.final && a.tp ? '<input type="checkbox" aria-label="Tampilkan CP ' + E(a.judul) + '" data-c="tpPick" value="' + E(a.id) + '"' + (tpOn(a) ? ' checked' : '') + '>' : '-') + '</td><td>' + E(a.kkm) + '</td><td><input class="gx-in num gx-bw" type="number" step="0.1" data-id="' + a.id + '" value="' + E(hasV(a.bobot) ? a.bobot : 1) + '"></td></tr>'; }).join('') +
+    '<h3 style="margin-top:14px">Daftar Penilaian &amp; Bobot</h3><div class="gx-tw"><table class="gx-t"><thead><tr><th>#</th><th>Tanggal</th><th>Jenis</th><th>Judul</th><th>TP</th><th>CP</th><th>KKM</th><th>Bobot</th><th>Aksi</th></tr></thead><tbody>' +
+    al.map(function (a, i) { return '<tr><td>P' + (i + 1) + '</td><td>' + E(a.date) + '</td><td>' + E(a.jenis) + (a.final ? ' <span class="gx-tag ok">final</span>' : '') + '</td><td>' + E(a.judul) + '</td><td>' + E(a.tp || '-') + '</td><td>' + (!a.final && a.tp ? '<input type="checkbox" aria-label="Tampilkan CP ' + E(a.judul) + '" data-c="tpPick" value="' + E(a.id) + '"' + (tpOn(a) ? ' checked' : '') + '>' : '-') + '</td><td>' + E(a.kkm) + '</td><td><input class="gx-in num gx-bw" type="number" step="0.1" data-id="' + a.id + '" value="' + E(hasV(a.bobot) ? a.bobot : 1) + '"></td><td style="white-space:nowrap"><button class="gx-b sm" data-a="rEd" data-id="' + a.id + '">Edit</button> <button class="gx-b r sm" data-a="rDel" data-id="' + a.id + '">Hapus</button></td></tr>'; }).join('') +
     '</tbody></table></div><div class="gx-row"><button class="gx-b" data-a="rBobot">💾 Simpan Bobot</button><button class="gx-b s" data-a="tpSave">Simpan Pilihan CP</button><span class="gx-muted">Bobot dihitung proporsional walau totalnya tidak 100.</span></div>' +
     '<div class="gx-stats">' + [['Jumlah penilaian', al.length], ['Jumlah siswa', ss.length], ['Rata-rata kelas', nas.length ? r2(nas.reduce(function (a, b) { return a + b; }, 0) / nas.length) : '-']].map(function (x) { return '<div class="gx-stat"><small>' + x[0] + '</small><b>' + x[1] + '</b></div>'; }).join('') + '</div>' +
     '<div class="gx-tw"><table class="gx-t"><thead><tr><th>No</th><th>Nama</th><th>NISN</th>' + (all ? al.map(function (a, i) { return '<th title="' + E(a.judul) + '">P' + (i + 1) + '</th>'; }).join('') : '') + '<th>Nilai Akhir</th><th>Predikat</th><th>Capaian Pembelajaran</th></tr></thead><tbody id="gx-rt">' +
@@ -571,9 +732,14 @@ function raporOne(s, o) {
     (cc.sikap ? '<tr><td>Sikap</td><td>' + E(at.sikap || '-') + '</td></tr>' : '') + '</tbody></table>' : '';
   var extraTb = cc.extra ? '<table class="bt"><thead><tr><th>Ekstrakurikuler</th><th>Nilai</th><th>Keterangan</th></tr></thead><tbody>' + extraList(k).filter(function(x) { return hasV(x.scores && x.scores[s.id]); }).map(function(x) { return '<tr><td>' + E(x.name) + '</td><td>' + E(x.scores[s.id]) + '</td><td>' + E((x.notes || {})[s.id] || '-') + '</td></tr>'; }).join('') + '</tbody></table>' : '';
   return '<div class="gx-rp">' + kopHtml('<b>' + E(S().school || 'NAMA SEKOLAH') + '</b><div style="font-weight:700;font-size:15px">LAPORAN HASIL BELAJAR</div><div>' + E(o.t) + '</div><div>Tahun Pelajaran ' + E(S().year) + '</div>') +
-    '<table class="idt"><tr><td style="width:18%">Nama Siswa</td><td>: <b>' + E(s.name) + '</b></td><td style="width:14%">Kelas</td><td>: ' + E(k) + '</td></tr><tr><td>NISN</td><td>: ' + E(s.nisn) + '</td><td>Semester</td><td>: ' + E(o.sm) + '</td></tr></table>' +
+    '<table class="idt"><tr><td style="width:18%">Nama Siswa</td><td>: <b>' + E(s.name) + '</b></td><td style="width:14%">Kelas</td><td>: ' + E(k) + '</td></tr><tr><td>NISN</td><td' + NISN_ST + '>: ' + E(s.nisn) + '</td><td>Semester</td><td>: ' + E(o.sm) + '</td></tr></table>' +
     '<table class="bt" style="margin-top:10px"><thead>' + head + '</thead><tbody>' + rows + '</tbody></table><div class="gx-report-bottom">' + (absTb ? '<div>' + absTb + '</div>' : '') + (extraTb ? '<div>' + extraTb + '</div>' : '') + '</div>' +
-    '<div class="ttd"><div>Mengetahui,<br>Kepala Sekolah<div class="sp"></div><b><u>' + E(S().head || '....................') + '</u></b><br>NIP. ' + E(S().headNip || '-') + '</div><div>' + E(o.c || '') + (o.c ? ', ' : '') + E(fmtD(o.d).replace(/^\w+, /, '')) + '<br>Wali Kelas<div class="sp"></div><b><u>' + E(o.w || '....................') + '</u></b><br>NIP. ' + E(o.wn || '-') + '</div></div></div>';
+    (o.xls ? ttdXls(o, span) + '</div>' : '<div class="ttd"><div>Mengetahui,<br>Kepala Sekolah<div class="sp"></div><b><u>' + E(S().head || '....................') + '</u></b><br>NIP. ' + E(S().headNip || '-') + '</div><div>' + E(o.c || '') + (o.c ? ', ' : '') + E(fmtD(o.d).replace(/^\w+, /, '')) + '<br>Wali Kelas<div class="sp"></div><b><u>' + E(o.w || '....................') + '</u></b><br>NIP. ' + E(o.wn || '-') + '</div></div></div>');
+}
+function ttdXls(o, span) {
+  var L = Math.max(1, Math.ceil(span / 2)), R = Math.max(1, span - L), rw = function (a, b) { return '<tr><td colspan="' + L + '" style="text-align:center;vertical-align:top">' + a + '</td><td colspan="' + R + '" style="text-align:center;vertical-align:top">' + b + '</td></tr>'; };
+  return '<br><table class="ttdx" style="width:100%">' + rw('Mengetahui,', E(o.c || '') + (o.c ? ', ' : '') + E(fmtD(o.d).replace(/^\w+, /, ''))) + rw('Kepala Sekolah', 'Wali Kelas') + rw('&nbsp;', '&nbsp;') + rw('&nbsp;', '&nbsp;') + rw('&nbsp;', '&nbsp;') +
+    rw('<b><u>' + E(S().head || '....................') + '</u></b>', '<b><u>' + E(o.w || '....................') + '</u></b>') + rw('NIP. ' + E(S().headNip || '-'), 'NIP. ' + E(o.wn || '-')) + '</table>';
 }
 function rOpts() { return { t: val('r-t'), sm: val('r-sm'), w: val('r-w'), wn: val('r-wn'), c: val('r-c'), d: val('r-d'), cols: rcols(), grouped: st.rgroup !== false }; }
 function rPrev() {
@@ -612,7 +778,13 @@ function legerTableData(k, cc, dec) {
 function selectedLegerClasses() { return legerClasses(st.lmode || 'one', st.lmode === 'many' ? st.lmany || [] : [st.lk], st.lyear); }
 function legerOne(k, cc) {
   var t = legerTableData(k,cc,st.ldec);
-  return '<section class="gx-rp gx-leger">' + kopHtml('<b>' + E(S().school || 'NAMA SEKOLAH') + '</b><div>LEGER NILAI • KELAS ' + E(k) + '</div><div>Tahun Pelajaran ' + E(S().year) + ' • Semester ' + E(S().semester) + '</div>') + (t.head.length ? '<table class="bt"><thead><tr>' + t.head.map(function(x) { return '<th>' + E(x) + '</th>'; }).join('') + '</tr></thead><tbody>' + t.rows.map(function(r) { return '<tr>' + r.map(function(v) { return '<td>' + E(v) + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody></table>' : '') + '<div class="gx-legend">' + t.subjects.map(function(m) { return E(shortSubject(m) + ' = ' + m); }).join(' · ') + '</div></section>';
+  return '<section class="gx-rp gx-leger">' + kopHtml('<b>' + E(S().school || 'NAMA SEKOLAH') + '</b><div>LEGER NILAI • KELAS ' + E(k) + '</div><div>Tahun Pelajaran ' + E(S().year) + ' • Semester ' + E(S().semester) + '</div>') + (t.head.length ? '<table class="bt"><thead><tr>' + t.head.map(function(x) { return '<th>' + E(x) + '</th>'; }).join('') + '</tr></thead><tbody>' + t.rows.map(function(r) { return '<tr>' + r.map(function(v, j) { return '<td' + (t.head[j] === 'NISN' ? NISN_ST : '') + '>' + E(v) + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody></table>' : '') + '<div class="gx-legend">' + t.subjects.map(function(m) { return E(shortSubject(m) + ' = ' + m); }).join(' · ') + '</div>' + guruTb(k) + '</section>';
+}
+function pengampu(k, m) { var s = {}; list('teachers').forEach(function (t) { if (t.ampu && (t.ampu[k] || []).indexOf(m) > -1) s[t.name] = 1; }); list('assess').forEach(function (a) { if (a.kelas === k && a.mapel === m && a.teacher && a.teacher !== 'admin') s[a.teacher] = 1; }); return Object.keys(s).sort(); }
+function guruTb(k) {
+  var sj = S().subjects || SUBJ;
+  return '<div class="gx-legend"><b>Guru Pengampu Mata Pelajaran Kelas ' + E(k) + '</b><table class="bt" style="width:auto;min-width:60%;margin-top:4px"><thead><tr><th>No</th><th>Mata Pelajaran</th><th>Guru Pengampu</th></tr></thead><tbody>' +
+    sj.map(function (m, i) { return '<tr><td style="text-align:center">' + (i + 1) + '</td><td>' + E(m + ' (' + shortSubject(m) + ')') + '</td><td>' + E(pengampu(k, m).join(', ') || '-') + '</td></tr>'; }).join('') + '</tbody></table></div>';
 }
 P.leger = function () {
   var ks = classes(); if (!ks.length) return noCls(); if (ks.indexOf(st.lk) < 0) st.lk = ks[0]; var levels = []; ks.forEach(function(k) { var y = yearLevel(k); if (y && levels.indexOf(y) < 0) levels.push(y); }); if (levels.indexOf(st.lyear) < 0) st.lyear = levels[0];
@@ -626,6 +798,7 @@ function lReady() { if (!selectedLegerClasses().length) { toast('Pilih kelas unt
 P.data = function () {
   return card('Backup', '<p class="gx-muted">' + (U.admin ? 'Unduh seluruh data aplikasi (JSON).' : 'Unduh data jurnal &amp; penilaian Anda (JSON).') + '</p><div class="gx-row"><button class="gx-b" data-a="bak">⬇️ Download Backup</button><button class="gx-b s" data-a="sync">🔄 Sinkron Sekarang</button></div>') +
     card('Restore', '<p class="gx-muted">Pulihkan dari file backup. Data yang lebih baru di file akan menimpa data saat ini lalu disinkronkan.</p><input type="file" accept=".json,application/json" id="gx-rf" class="gx-in"><div class="gx-row"><button class="gx-b w" data-a="restore">⬆️ Restore</button></div>') +
+    card('Gabungkan Beberapa File Backup', '<p class="gx-muted">Pilih beberapa file backup sekaligus. Data kembar (mis. jurnal dengan guru, kelas, tanggal &amp; jam sama; penilaian dengan mapel, tanggal, jenis &amp; judul sama; siswa dengan NISN sama; guru dengan nama sama) akan saling menimpa — yang paling baru diperbarui yang dipakai.</p><input type="file" multiple accept=".json,application/json" id="gx-mf" class="gx-in"><div class="gx-row"><button class="gx-b" data-a="mergeDl">🔗 Gabungkan &amp; Download</button><button class="gx-b w" data-a="mergeRs">🔗 Gabungkan &amp; Restore ke Aplikasi</button></div>') +
     card('Reset Data Tertentu', '<p class="gx-muted">Hapus data per kelas / per mapel' + (U.admin ? '' : ' (hanya data milik Anda)') + '. Data juga terhapus di server saat sinkron. Lakukan backup dahulu.</p><div class="gx-g">' +
       F('Kelas', '<select class="gx-in" id="rs-k">' + opt(U.admin ? classes() : myKelas(), st.rsk) + '</select>') +
       F('Mata Pelajaran', '<select class="gx-in" id="rs-m">' + opt(myMapel(st.rsk || classes()[0]), st.rsm2, 'Semua Mapel') + '</select>') + '</div><div class="gx-row">' +
@@ -639,7 +812,7 @@ P.data = function () {
 P.akun = function () {
   if (U.admin) return card('Ganti Password Admin', '<p class="gx-muted">Password awal admin adalah <b>admin</b>. Setelah diganti, password baru tersimpan di data pengaturan dan ikut tersinkron.</p><div class="gx-g">' + F('Password lama', '<input class="gx-in" type="password" id="a-o">') + F('Password baru', '<input class="gx-in" type="password" id="a-n1">') + F('Ulangi password baru', '<input class="gx-in" type="password" id="a-n2">') + '</div><div class="gx-row"><button class="gx-b" data-a="chPw">Simpan</button></div>');
   var t = list('teachers').filter(function (x) { return x.name === U.name; })[0];
-  return card('Ganti Password', '<div class="gx-g">' + F('Password lama', '<input class="gx-in" type="password" id="a-o">') + F('Password baru', '<input class="gx-in" type="password" id="a-n1">') + F('Ulangi password baru', '<input class="gx-in" type="password" id="a-n2">') + '</div><div class="gx-row"><button class="gx-b" data-a="chPw">Simpan</button></div>') +
+  return (t ? card('Edit Nama / Username', '<div class="gx-g">' + F('Nama Guru (lengkap + gelar)', '<input class="gx-in" id="a-nm" value="' + E(U.name) + '">', 'full') + '</div><div class="gx-row"><button class="gx-b" data-a="chName">Simpan Nama</button></div><p class="gx-muted">Nama baru dipakai untuk login. Jurnal, penilaian, dan ekstrakurikuler Anda ikut diperbarui.</p>') : '') + card('Ganti Password', '<div class="gx-g">' + F('Password lama', '<input class="gx-in" type="password" id="a-o">') + F('Password baru', '<input class="gx-in" type="password" id="a-n1">') + F('Ulangi password baru', '<input class="gx-in" type="password" id="a-n2">') + '</div><div class="gx-row"><button class="gx-b" data-a="chPw">Simpan</button></div>') +
     (t ? card('Kelas &amp; Mapel yang Saya Ampu', ampuEdHtml(t)) : '');
 };
 
@@ -786,26 +959,20 @@ A.kXls = function () { xls('Katrol_' + st.kk, KHEAD, kRows(), kTitle()); };
 A.kPrint = function () { printTab(kTitle(), KHEAD, kRows()); };
 A.kPdf = function () { pdfTab('Katrol_' + st.kk, kTitle(), KHEAD, kRows()); };
 A.rpPrint = function () { rPrev(); window.print(); };
-A.rpXls = function () { rPrev(); var h = document.getElementById('gx-print').innerHTML.replace(/<table class="bt"/g, '<table border="1" class="bt"'); dl('Rapor_' + st.pk2 + '.xls', 'application/vnd.ms-excel', '\ufeff<html><head><meta charset="utf-8"></head><body>' + h + '</body></html>'); };
-A.rpPdf = function () {
-  rPrev(); var el = document.getElementById('gx-print');
-  var go2 = function () { window.html2pdf().set({ margin: 8, filename: 'Rapor_' + st.pk2 + '.pdf', html2canvas: { scale: 2 }, jsPDF: { format: 'a4' }, pagebreak: { mode: ['css', 'legacy'], after: '.gx-rp' } }).from(el).save(); };
-  if (window.html2pdf) return go2(); if (!navigator.onLine) { toast('Offline: gunakan Print → Simpan sebagai PDF'); return window.print(); }
-  toast('Menyiapkan PDF...'); loadJs('https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js', go2, function () { window.print(); });
-};
+A.rpXls = function () { rPrev(); var o = Object.assign(rOpts(), { xls: true }), s = val('r-s'), h = (s ? [D.students[s]] : stuOf(st.pk2)).filter(Boolean).map(function (x) { return raporOne(x, o); }).join('').replace(/<table class="bt"/g, '<table border="1" class="bt"'); dl('Rapor_' + st.pk2 + '.xls', 'application/vnd.ms-excel', '\ufeff<html><head><meta charset="utf-8"></head><body>' + h + '</body></html>'); };
+A.rpPdf = function () { rPrev(); truePdf({ html: appDoc(document.getElementById('gx-print').innerHTML), name: 'Rapor_' + st.pk2, orient: 'p', margin: 8, breakSel: '.gx-rp', fallback: function () { window.print(); } }); };
 A.lPrint = function () { if (lReady()) window.print(); };
 A.lXls = function () { if (!lReady()) return; var h = selectedLegerClasses().map(function(k) { return legerOne(k,lcols()); }).join('').replace(/<table class="bt"/g,'<table border="1" class="bt"'); dl('Leger_' + today() + '.xls','application/vnd.ms-excel','\ufeff<html><head><meta charset="utf-8"></head><body>' + h + '</body></html>'); };
-A.lPdf = function () {
-  if (!lReady()) return;
-  var generate = function () { var el = document.getElementById('gx-print'); window.html2pdf().set({margin:8,filename:'Leger_' + today() + '.pdf',html2canvas:{scale:2,windowWidth:1400,onclone:function(doc) { var target = doc.getElementById('gx-print'); if (target) target.style.width = '1120px'; }},jsPDF:{format:'a4',orientation:'landscape'},pagebreak:{mode:['css','legacy'],avoid:'tr',after:'.gx-leger:not(:last-child)'}}).from(el).save(); };
-  if (window.html2pdf) return generate(); if (!navigator.onLine) { toast('Offline: gunakan Print → Simpan sebagai PDF'); return window.print(); }
-  toast('Menyiapkan PDF...'); loadJs('https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js',generate,function() { toast('Gunakan Print → Simpan sebagai PDF'); window.print(); });
-};
+A.lPdf = function () { if (!lReady()) return; truePdf({ html: appDoc(document.getElementById('gx-print').innerHTML), name: 'Leger_' + today(), orient: 'l', margin: 8, breakSel: '.gx-rp', fallback: function () { window.print(); } }); };
 A.bak = function () {
   var d = U.admin ? D : { journals: {}, assess: {}, extras: {} }; if (!U.admin) ['journals', 'assess', 'extras'].forEach(function (c) { list(c).forEach(function (x) { if (x.teacher === U.name) d[c][x.id] = x; }); });
   dl('backup_rapor_' + (U.admin ? 'semua' : sid(U.name)) + '_' + today() + '.json', 'application/json', JSON.stringify({ app: 'gxr', at: Date.now(), data: d }));
 };
-A.sync = function () { fbInit(); flush(); toast(navigator.onLine ? 'Sinkronisasi dimulai' : 'Sedang offline', navigator.onLine ? 'ok' : 'err'); };
+A.sync = function () {
+  if (!navigator.onLine) return toast('Sedang offline', 'err');
+  if (!fdb) { fbInit(); return toast(cfg().apiKey ? 'Menghubungkan ke Firebase...' : 'Firebase belum diatur', cfg().apiKey ? 'ok' : 'err'); }
+  flush(); pull(true, function (ok, ch, err) { toast(err ? 'Sebagian data gagal diambil (cek rules)' : ok ? 'Sinkron selesai • ' + ch + ' data baru' : 'Sinkron sedang berjalan', err ? 'err' : 'ok'); if (ok) render(); });
+};
 A.restore = function () {
   var f = document.getElementById('gx-rf').files[0]; if (!f) return toast('Pilih file backup', 'err');
   if (!cf2('Restore data dari "' + f.name + '"? Data saat ini dapat tertimpa.')) return;
@@ -826,7 +993,7 @@ A.rstHadirK = function () { var r = rstK(); if (r && cf2('Hapus data kehadiran &
 A.rstMine = function () { if (cf2('Hapus SEMUA jurnal dan penilaian milik Anda?')) wipe(['journals', 'assess', 'extras'], function (x) { return x.teacher === U.name; }); };
 A.rstNilai = function () { if (cf2('Hapus SEMUA jurnal, kehadiran, dan penilaian seluruh guru?')) wipe(['journals', 'assess', 'attitudes', 'extras']); };
 A.rstAll = function () { if (cf2('RESET TOTAL: hapus siswa, guru, jurnal, kehadiran, nilai?')) wipe(['students', 'teachers', 'journals', 'assess', 'attitudes', 'extras']); };
-A.rstLocal = function () { var n = Object.keys(QQ).length; if (!cf2('Bersihkan cache lokal di browser ini?' + (n ? '\nPERINGATAN: ' + n + ' data belum terkirim ke server dan akan hilang!' : '\nData akan diambil ulang dari server.'))) return; localStorage.removeItem(K); localStorage.removeItem(QK); location.reload(); };
+A.rstLocal = function () { var n = Object.keys(QQ).length; if (!cf2('Bersihkan cache lokal di browser ini?' + (n ? '\nPERINGATAN: ' + n + ' data belum terkirim ke server dan akan hilang!' : '\nData akan diambil ulang dari server.'))) return; localStorage.removeItem(K); localStorage.removeItem(QK); localStorage.removeItem(LK); location.reload(); };
 A.chPw = async function () {
   var o = document.getElementById('a-o').value, a = document.getElementById('a-n1').value;
   if (a.length < 4 || a !== document.getElementById('a-n2').value) return toast('Password baru tidak valid / tidak sama', 'err');
@@ -837,6 +1004,73 @@ A.chPw = async function () {
   var t = list('teachers').filter(function (x) { return x.name === U.name; })[0]; if (!t) return;
   if (t.pass !== await hash(o)) return toast('Password lama salah', 'err');
   if (!cf2('Ganti password?')) return; t.pass = await hash(a); put('teachers', t); toast('Password diganti', 'ok'); render();
+};
+A.rhRef = function () { rhRead(); render(); };
+A.rhToday = function () { st.rhf = st.rht = today(); render(); };
+A.rhXls = function () { rhRead(); var d = rhData(); xls('Rekap_Kehadiran_' + d.f + '_' + d.t, RHHEAD, d.rows, rhTitle()); };
+A.rhPrint = function () { rhRead(); printTab(rhTitle(), RHHEAD, rhData().rows); };
+A.rhPdf = function () { rhRead(); var d = rhData(); pdfTab('Rekap_Kehadiran_' + d.f + '_' + d.t, rhTitle(), RHHEAD, d.rows); };
+A.rEd = function (el) { var a = D.assess[el.getAttribute('data-id')]; if (!a) return; st.nk = a.kelas; st.nm = a.mapel; st.na = a.id; st.tpDraft = {}; go('nilai'); };
+A.rDel = function (el) { var a = D.assess[el.getAttribute('data-id')]; if (a && cf2('Hapus penilaian "' + a.judul + '" beserta seluruh nilainya?')) { rm('assess', a.id); render(); toast('Penilaian dihapus', 'ok'); } };
+A.chName = function () {
+  var n = val('a-nm'), t = list('teachers').filter(function (x) { return x.name === U.name; })[0]; if (!t) return;
+  if (n.length < 3) return toast('Nama guru minimal 3 huruf', 'err'); if (n.toLowerCase() === 'admin') return toast('Nama tidak boleh "admin"', 'err');
+  if (n === t.name) return toast('Nama tidak berubah', 'err');
+  if (list('teachers').some(function (x) { return x.id !== t.id && x.name.toLowerCase() === n.toLowerCase(); })) return toast('Nama sudah terdaftar', 'err');
+  if (!cf2('Ubah nama "' + t.name + '" menjadi "' + n + '"?\nJurnal, penilaian & ekstrakurikuler Anda ikut diperbarui.')) return;
+  var old = t.name; ['journals', 'assess', 'extras'].forEach(function (c) { list(c).forEach(function (x) { if (x.teacher === old) { x.teacher = n; put(c, x); } }); });
+  t.name = n; put('teachers', t); U.name = n; sessionStorage.setItem(SK, JSON.stringify(U)); render(); toast('Nama diperbarui', 'ok');
+};
+/* gabung backup */
+function natKey(c, x) {
+  var L = function (v) { return String(v == null ? '' : v).trim().toLowerCase(); };
+  if (c === 'journals') return [x.teacher, x.kelas, x.date, x.jamFrom, x.jamTo].map(L).join('|');
+  if (c === 'assess') return [x.teacher, x.kelas, x.mapel, x.date, x.jenis, x.judul].map(L).join('|');
+  if (c === 'students') return x.nisn ? 'n|' + L(x.nisn) : 'k|' + L(x.name) + '|' + L(x.kelas);
+  if (c === 'teachers') return L(x.name);
+  if (c === 'extras') return [x.teacher, x.kelas, x.name].map(L).join('|');
+  if (c === 'attitudes') return [x.kelas, x.sid].map(L).join('|');
+  return 'id|' + x.id;
+}
+function remapRefs(c, x, rmap) {
+  var mv = function (o) { if (!o || typeof o !== 'object') return o; var n = {}; Object.keys(o).forEach(function (s) { n[rmap[s] || s] = o[s]; }); return n; };
+  if (c === 'journals') x.abs = mv(x.abs);
+  else if (c === 'assess') x.scores = mv(x.scores);
+  else if (c === 'extras') { x.scores = mv(x.scores); x.notes = mv(x.notes); }
+  else if (c === 'attitudes' && x.sid && rmap[x.sid]) { x.sid = rmap[x.sid]; if (x.kelas) x.id = sid(x.kelas + '_' + x.sid); }
+}
+function mergeData(arr) {
+  var out = {}, idx = {}, rmap = {}; COLS.forEach(function (c) { out[c] = {}; idx[c] = {}; });
+  ['students'].concat(COLS.filter(function (c) { return c !== 'students'; })).forEach(function (c) {
+    arr.forEach(function (d) {
+      var src = d && d[c]; if (!src || typeof src !== 'object') return;
+      Object.keys(src).forEach(function (id) {
+        var x = src[id]; if (!x || typeof x !== 'object') return; x = JSON.parse(JSON.stringify(x)); x.id = x.id || id; if (c !== 'students') remapRefs(c, x, rmap);
+        var key = natKey(c, x), ex = out[c][x.id] || idx[c][key];
+        if (!ex) { out[c][x.id] = x; idx[c][key] = x; return; }
+        if (c === 'students' && x.id !== ex.id) rmap[x.id] = ex.id;
+        if ((x.updatedAt || 0) >= (ex.updatedAt || 0)) { x.id = ex.id; out[c][ex.id] = x; idx[c][natKey(c, ex)] = x; idx[c][key] = x; }
+        else idx[c][key] = ex;
+      });
+    });
+  });
+  return out;
+}
+function mergeFiles(min, cb) {
+  var fs = document.getElementById('gx-mf').files; if (!fs || fs.length < min) return toast('Pilih minimal ' + min + ' file backup', 'err');
+  Promise.all(Array.prototype.map.call(fs, function (f) { return f.text().then(function (t) { var j = JSON.parse(t); return j.data || j; }); })).then(function (arr) { cb(mergeData(arr), fs.length); }).catch(function () { toast('Ada file backup yang tidak valid', 'err'); });
+}
+A.mergeDl = function () { mergeFiles(2, function (m, n) { var c = 0; COLS.forEach(function (k) { c += Object.keys(m[k]).length; }); dl('backup_rapor_gabungan_' + today() + '.json', 'application/json', JSON.stringify({ app: 'gxr', at: Date.now(), merged: n, data: m })); toast(n + ' file digabung • ' + c + ' data', 'ok'); }); };
+A.mergeRs = function () {
+  mergeFiles(1, function (m, n) {
+    if (!cf2('Gabungkan ' + n + ' file backup ke data aplikasi?\nData kembar akan saling menimpa (yang terbaru dipakai).')) return;
+    var res = mergeData([JSON.parse(JSON.stringify(D)), m]), cnt = 0;
+    COLS.forEach(function (c) {
+      if (!U.admin && ['journals', 'assess', 'extras'].indexOf(c) < 0) return;
+      Object.keys(res[c]).forEach(function (id) { var x = res[c][id], l = D[c][id]; if (!U.admin && x.teacher !== U.name) return; if (l && JSON.stringify(l) === JSON.stringify(x)) return; x.updatedAt = Date.now(); D[c][id] = x; QQ[c + '/' + id] = 1; cnt++; });
+    });
+    save(); saveQ(); flush(); render(); toast(cnt + ' data digabung & dipulihkan', 'ok');
+  });
 };
 var C = {
   tpPick: function(e) { st.tpDraft = st.tpDraft || {}; st.tpDraft[e.value] = e.checked; if (st.page === 'nilai') nStat(); else { var r = rekapData(); qa('#gx-rt .cp').forEach(function(td) { td.textContent = capai(r.al,td.getAttribute('data-sid')); }); } },
