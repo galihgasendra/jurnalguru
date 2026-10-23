@@ -410,7 +410,7 @@ function capai(al, student, draft) {
     var key = !hasV(v) || !validScore(v) ? 'pending' : scoreNum(v) < k ? 'improve' : scoreNum(v) >= k + (100 - k) * 0.6 ? 'excellent' : 'good';
     if (groups[key].indexOf(a.tp.trim()) < 0) groups[key].push(a.tp.trim());
   });
-  return [['excellent', 'Menunjukkan kompetensi yang sangat baik dalam hal '], ['good', 'Murid menunjukkan kompetensi yang baik dalam hal '], ['improve', 'Perlu peningkatan dalam hal '], ['pending', 'Belum dinilai dalam hal ']].map(function (g) { return groups[g[0]].length ? g[1] + groups[g[0]].join(', ') + '.' : ''; }).filter(Boolean).join(' ') || '-';
+  return [['excellent', 'Menunjukkan kompetensi yang sangat baik dalam hal '], ['good', 'Menunjukkan kompetensi yang baik dalam hal '], ['improve', 'Perlu peningkatan dalam hal '], ['pending', 'Belum dinilai dalam hal ']].map(function (g) { return groups[g[0]].length ? g[1] + groups[g[0]].join(', ') + '.' : ''; }).filter(Boolean).join(' ') || '-';
 }
 function tpChoices(al, exclude) {
   var rows = al.filter(function (a) { return !a.final && a.tp && a.id !== exclude; });
