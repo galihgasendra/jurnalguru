@@ -126,26 +126,16 @@ body *{visibility:hidden!important}
 /* ====== KONFIGURASI FIREBASE ======
    Isi apiKey di bawah (atau lewat menu Pengaturan Sekolah sebagai admin). */
 var GXR_FB = {
-  apiKey: "AIzaSyBVrd6MepHeBe26YR-NxkqhLV0Dpv944PE",
-
-  authDomain: "presensijurnalnilai.firebaseapp.com",
-
-  databaseURL: "https://presensijurnalnilai-default-rtdb.asia-southeast1.firebasedatabase.app",
-
-  projectId: "presensijurnalnilai",
-
-  storageBucket: "presensijurnalnilai.firebasestorage.app",
-
-  messagingSenderId: "484469986460",
-
-  appId: "1:484469986460:web:8439037fa094ebaa410959",
-
-  measurementId: "G-VE8SVQ4DCW"
-
+  apiKey: "AIzaSyARu-rK1HfQMZHZjrept6Ppbv5e9gP86Pc",
+  authDomain: "jurnalgurusmp.firebaseapp.com",
+  projectId: "jurnalgurusmp",
+  storageBucket: "jurnalgurusmp.firebasestorage.app",
+  messagingSenderId: "805676032036",
+  appId: "1:805676032036:web:357bd6eb497a96fef3b8b1"
 };
 var SDK = 'https://www.gstatic.com/firebasejs/10.12.2/';
-var K = 'gxr_db_v1', QK = 'gxr_q_v1', SK = 'gxr_ses_v1', WK = 'gxr_wali_v1', LK = 'gxr_ls_v1';
-var LS = (function () { try { return JSON.parse(localStorage.getItem('gxr_ls_v1')) || {}; } catch (e) { return {}; } })(), pulling = false;
+var K = 'gxr_db_v1', QK = 'gxr_q_v1', SK = 'gxr_ses_v1', WK = 'gxr_wali_v1', LK = 'gxr_ls_v2', EXDEF = ['Pramuka', 'PMR', 'Futsal'];
+var LS = (function () { try { return JSON.parse(localStorage.getItem('gxr_ls_v2')) || {}; } catch (e) { return {}; } })(), pulling = false;
 var NISN_ST = ' style="mso-number-format:\'\\@\'"';
 var SUBJ = ['Pendidikan Agama dan Budi Pekerti','Pendidikan Pancasila','Bahasa Indonesia','Matematika','Ilmu Pengetahuan Alam','Ilmu Pengetahuan Sosial','Bahasa Inggris','Seni Budaya dan Prakarya','Pendidikan Jasmani Olahraga dan Kesehatan','Informatika','Muatan Lokal'];
 var JENIS = ['Tugas Harian','Ulangan Harian','Praktik/Kinerja','Proyek','Portofolio','Sumatif Tengah Semester','Sumatif Akhir Semester'];
@@ -317,14 +307,29 @@ function put(c, o) { o.updatedAt = Date.now(); o.by = U ? U.name : ''; D[c][o.id
 function rm(c, id) { var o = D[c][id]; if (o) { o.deleted = true; put(c, o); } }
 
 /* ---------- Firebase sinkron ---------- */
-function cfg() { var c = JSON.parse(JSON.stringify(GXR_FB)); if (S().apiKey) c.apiKey = S().apiKey; return c; }
+function myKey() { var s = S(); return s.apiKey && s.apiKeyProj === GXR_FB.projectId ? s.apiKey : ''; }
+function cfg() { var c = JSON.parse(JSON.stringify(GXR_FB)); if (myKey()) c.apiKey = myKey(); return c; }
+function exNames() { var n = S().ekskul; return Array.isArray(n) ? n : EXDEF.slice(); }
+/* Penggabungan dokumen Firebase (hemat read & jumlah dokumen):
+   siswa = 1 dok/rombel, jurnal+presensi = 1 dok/kelas/mapel/bulan, penilaian = 1 dok/kelas/mapel,
+   kehadiran & sikap = 1 dok/rombel, nilai ekstrakurikuler = 1 dok/ekstrakurikuler.
+   Setiap dokumen berisi peta "items" {id: data}. Format lokal & backup tidak berubah. */
+function bkey(c, o) {
+  var mo = String(o.date || '').slice(0, 7) || 'tanpa-tanggal';
+  if (c === 'students' || c === 'attitudes') return 'kelas_' + sid(o.kelas || '-');
+  if (c === 'journals') return sid((o.kelas || '-') + '__' + (o.mapel || '-') + '__' + mo);
+  if (c === 'assess') return sid((o.kelas || '-') + '__' + (o.mapel || '-'));
+  if (c === 'extras') return 'ekskul_' + sid(o.name || '-');
+  return 'semua';
+}
+function migQ() { var f = 'gxr_mig2_' + GXR_FB.projectId; if (localStorage.getItem(f)) return; COLS.forEach(function (c) { Object.keys(D[c]).forEach(function (id) { if (D[c][id]) QQ[c + '/' + id] = 1; }); }); localStorage.setItem(f, '1'); saveQ(); }
 function loadJs(src, ok, er) { if (document.querySelector('script[src="' + src + '"]')) { ok(); return; } var s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = er; document.head.appendChild(s); }
 function fbInit() {
   if (fdb || fbBusy || !navigator.onLine || !cfg().apiKey) { stat(); return; }
   fbBusy = true; var fail = function () { fbBusy = false; stat(); };
   loadJs(SDK + 'firebase-app-compat.js', function () {
     loadJs(SDK + 'firebase-firestore-compat.js', function () {
-      try { var fb = window.firebase; var app = fb.apps.length ? fb.app() : fb.initializeApp(cfg()); fdb = app.firestore(); pull(); flush(); } catch (e) { console.warn(e); }
+      try { var fb = window.firebase; var app = fb.apps.length ? fb.app() : fb.initializeApp(cfg()); fdb = app.firestore(); migQ(); pull(); flush(); } catch (e) { console.warn(e); }
       fbBusy = false; stat();
     }, fail);
   }, fail);
@@ -336,10 +341,10 @@ function pull(force, cb) {
   if (!fdb || !navigator.onLine || pulling) { if (cb) cb(false, 0, 0); stat(); return; }
   pulling = true; stat(); var FS = window.firebase.firestore, ch = 0, err = 0;
   Promise.all(COLS.map(function (c) {
-    var ref = fdb.collection('gxr_' + c), qy = LS[c] ? ref.where('srvAt', '>=', FS.Timestamp.fromMillis(LS[c])) : ref;
+    var ref = fdb.collection('gxr2_' + c), qy = LS[c] ? ref.where('srvAt', '>=', FS.Timestamp.fromMillis(LS[c])) : ref;
     return qy.get().then(function (snap) {
       var mx = LS[c] || 0;
-      snap.forEach(function (doc) { var d = doc.data(); if (!d) return; var sa = d.srvAt && d.srvAt.toMillis ? d.srvAt.toMillis() : 0; if (sa > mx) mx = sa; delete d.srvAt; d.id = d.id || doc.id; var l = D[c][d.id]; if (!l || (d.updatedAt || 0) > (l.updatedAt || 0)) { D[c][d.id] = d; ch++; } });
+      snap.forEach(function (doc) { var b = doc.data(); if (!b) return; var sa = b.srvAt && b.srvAt.toMillis ? b.srvAt.toMillis() : 0; if (sa > mx) mx = sa; var it = b.items || {}; Object.keys(it).forEach(function (id) { var d = it[id]; if (!d) return; d.id = d.id || id; var l = D[c][d.id]; if (!l || (d.updatedAt || 0) > (l.updatedAt || 0)) { D[c][d.id] = d; ch++; } }); });
       LS[c] = mx || 1;
     }).catch(function (e) { err++; console.warn('pull', c, e); });
   })).then(function () {
@@ -351,11 +356,16 @@ function flush() {
   if (!fdb || !navigator.onLine || flushing) { stat(); return; }
   var keys = Object.keys(QQ); if (!keys.length) { stat(); return; }
   flushing = true; stat(); var TS = window.firebase.firestore.FieldValue.serverTimestamp();
-  Promise.all(keys.map(function (k) {
+  var FP = window.firebase.firestore.FieldPath, G = {};
+  keys.forEach(function (k) {
     var i = k.indexOf('/'), c = k.slice(0, i), id = k.slice(i + 1), loc = D[c] && D[c][id];
-    if (!loc) { delete QQ[k]; return null; }
-    var data = JSON.parse(JSON.stringify(loc)); data.srvAt = TS;
-    return fdb.collection('gxr_' + c).doc(id).set(data).then(function () { delete QQ[k]; }).catch(function (e) { console.warn('sync', k, e); });
+    if (!loc) { delete QQ[k]; return; }
+    var b = bkey(c, loc), g = G[c + '|' + b] || (G[c + '|' + b] = { c: c, b: b, items: {}, f: [], k: [] });
+    g.items[id] = JSON.parse(JSON.stringify(loc)); g.f.push(new FP('items', id)); g.k.push(k);
+  });
+  Promise.all(Object.keys(G).map(function (gk) {
+    var g = G[gk];
+    return fdb.collection('gxr2_' + g.c).doc(g.b).set({ items: g.items, srvAt: TS, updatedAt: Date.now() }, { mergeFields: g.f.concat(['srvAt', 'updatedAt']) }).then(function () { g.k.forEach(function (k) { delete QQ[k]; }); }).catch(function (e) { console.warn('sync', gk, e); });
   })).then(function () { flushing = false; saveQ(); });
 }
 function stat(msg) {
@@ -410,7 +420,7 @@ function capai(al, student, draft) {
     var key = !hasV(v) || !validScore(v) ? 'pending' : scoreNum(v) < k ? 'improve' : scoreNum(v) >= k + (100 - k) * 0.6 ? 'excellent' : 'good';
     if (groups[key].indexOf(a.tp.trim()) < 0) groups[key].push(a.tp.trim());
   });
-  return [['excellent', 'Menunjukkan kompetensi yang sangat baik dalam hal '], ['good', 'Menunjukkan kompetensi yang baik dalam hal '], ['improve', 'Perlu peningkatan dalam hal '], ['pending', 'Belum dinilai dalam hal ']].map(function (g) { return groups[g[0]].length ? g[1] + groups[g[0]].join(', ') + '.' : ''; }).filter(Boolean).join(' ') || '-';
+  return [['excellent', 'Menunjukkan kompetensi yang sangat baik dalam hal '], ['good', 'Murid menunjukkan kompetensi yang baik dalam hal '], ['improve', 'Perlu peningkatan dalam hal '], ['pending', 'Belum dinilai dalam hal ']].map(function (g) { return groups[g[0]].length ? g[1] + groups[g[0]].join(', ') + '.' : ''; }).filter(Boolean).join(' ') || '-';
 }
 function tpChoices(al, exclude) {
   var rows = al.filter(function (a) { return !a.final && a.tp && a.id !== exclude; });
@@ -518,7 +528,8 @@ P.sekolah = function () {
     F('Mata Pelajaran (satu per baris)', '<textarea class="gx-in" id="s-sj" rows="8">' + E((s.subjects || []).join('\n')) + '</textarea>', 'full') +
     F('Logo Kop Kiri (URL)', '<input class="gx-in" id="s-ll" value="' + E(s.logoL === undefined ? LOGO_L : s.logoL) + '" placeholder="https://...">', 'full') +
     F('Logo Kop Kanan (URL, opsional)', '<input class="gx-in" id="s-lr" value="' + E(s.logoR || '') + '" placeholder="https://... (kosongkan jika tidak ada)">', 'full') +
-    F('Firebase apiKey (opsional, untuk mode online)', '<input class="gx-in" id="s-ak" value="' + E(s.apiKey) + '" placeholder="AIza...">', 'full') +
+    F('Daftar Ekstrakurikuler (satu per baris, berlaku untuk semua kelas)', '<textarea class="gx-in" id="s-ex" rows="4">' + E(exNames().join('\n')) + '</textarea>', 'full') +
+    F('Firebase apiKey (opsional, untuk mode online)', '<input class="gx-in" id="s-ak" value="' + E(myKey()) + '" placeholder="AIza...">', 'full') +
     '<p class="gx-muted" style="grid-column:1/-1">Sinkronisasi online butuh apiKey dari Firebase Console (Project Settings → Your apps → Web app). Tanpa apiKey, data hanya tersimpan di browser ini dan tidak terkirim ke Firebase. Setelah apiKey diisi dan disimpan, buka menu Beranda lalu tekan "Sinkronkan Sekarang".</p>' +
     '</div><div class="gx-row"><button class="gx-b" data-a="saveSet">Simpan Pengaturan</button><button class="gx-b s" data-a="defSubj">Kembalikan Mapel Default</button></div>');
 };
@@ -563,9 +574,11 @@ P.presensi = function () {
   var ks = myKelas(); if (!ks.length) return noCls();
   var j = st.editJ ? D.journals[st.editJ] : null; var k = j ? j.kelas : (st.pk && ks.indexOf(st.pk) > -1 ? st.pk : ks[0]); st.pk = k;
   var abs = j ? j.abs || {} : {};
-  return card(j ? 'Edit Presensi & Jurnal' : 'Presensi & Jurnal Mengajar', '<div class="gx-g">' + F('Kelas', '<select class="gx-in" id="p-k" data-c="pk"' + (j ? ' disabled' : '') + '>' + opt(ks, k) + '</select>') + F('Tanggal', '<input class="gx-in" type="date" id="p-d" value="' + (j ? j.date : today()) + '">') +
+  var ms = myMapel(k).slice(); var m = j ? (st.pm != null ? st.pm : (j.mapel || '')) : (st.pm && ms.indexOf(st.pm) > -1 ? st.pm : (ms[0] || '')); if (m && ms.indexOf(m) < 0) ms.unshift(m); st.pm = m;
+  var mSel = '<select class="gx-in" id="p-mp" data-c="pm">' + (m ? '' : '<option value="">-- pilih mata pelajaran --</option>') + opt(ms, m) + '</select>';
+  return card(j ? 'Edit Presensi & Jurnal' : 'Presensi & Jurnal Mengajar', '<div class="gx-g">' + F('Kelas', '<select class="gx-in" id="p-k" data-c="pk"' + (j ? ' disabled' : '') + '>' + opt(ks, k) + '</select>') + F('Mata Pelajaran', mSel) + F('Tanggal', '<input class="gx-in" type="date" id="p-d" value="' + (j ? j.date : today()) + '">') +
     F('Jam ke', jamSel('p-j1', j && j.jamFrom)) + F('Sampai jam ke', jamSel('p-j2', j && j.jamTo)) + F('Materi Pokok / Tujuan Pembelajaran', '<textarea class="gx-in" id="p-m" rows="2">' + E(j ? j.materi : '') + '</textarea>', 'full') + F('Kegiatan Pembelajaran', '<textarea class="gx-in" id="p-g" rows="2">' + E(j ? j.kegiatan : '') + '</textarea>', 'full') +
-    F('Cari nama siswa', '<input class="gx-in" data-i="flt" data-t="gx-pt" placeholder="ketik nama...">', 'full') + '</div><div class="gx-row"><button class="gx-b" data-a="saveJ">💾 Simpan</button>' + (j ? '<button class="gx-b s" data-a="cancelJ">Batal Edit</button>' : '') + '</div>' +
+    F('Cari nama siswa', '<input class="gx-in" data-i="flt" data-t="gx-pt" placeholder="ketik nama...">', 'full') + '</div><div class="gx-row"><button class="gx-b" data-a="saveJ">💾 Simpan</button>' + (j ? '<button class="gx-b s" data-a="cancelJ">Batal Edit</button>' : '') + '</div>' + (j && !j.mapel ? '<p class="gx-muted" style="color:#b45309">Jurnal ini tersimpan tanpa mata pelajaran. Silakan pilih mata pelajaran lalu Simpan.</p>' : '') +
     '<div class="gx-tw"><table class="gx-t" style="min-width:360px"><thead><tr><th>No</th><th>Nama Siswa</th><th>Ketidakhadiran</th></tr></thead><tbody id="gx-pt">' +
     stuOf(k).map(function (s, i) { var v = abs[s.id] || ''; return '<tr data-q="' + E(s.name.toLowerCase()) + '" data-sid="' + s.id + '"><td>' + (i + 1) + '</td><td>' + E(s.name) + '</td><td><span class="gx-chk">' + ['S', 'I', 'A'].map(function (x) { return '<label><input type="checkbox" class="gx-ab" data-c="ab" value="' + x + '"' + (v === x ? ' checked' : '') + '>' + x + '</label>'; }).join('') + '</span></td></tr>'; }).join('') +
     '</tbody></table></div><p class="gx-muted">S = Sakit, I = Izin, A = Alpa. Siswa tanpa centang dianggap hadir.</p>');
@@ -577,8 +590,8 @@ P.jurnal = function () {
   var rows = jFilter();
   return card('Jurnal Mengajar', ampuHint() + '<div class="gx-g">' + F('Kelas', '<select class="gx-in" id="j-k">' + opt(myKelas(), st.jk, 'Semua Kelas') + '</select>') + F('Dari tanggal', '<input class="gx-in" type="date" id="j-f" value="' + E(st.jf || '') + '">') + F('Sampai tanggal', '<input class="gx-in" type="date" id="j-t" value="' + E(st.jt || '') + '">') +
     '</div><div class="gx-row"><button class="gx-b" data-a="jRef">🔄 Refresh</button><button class="gx-b g" data-a="jXls">📗 Excel</button><button class="gx-b s" data-a="jPrint">🖨️ Print</button><button class="gx-b r" data-a="jPdf">📕 PDF</button></div>' +
-    '<div class="gx-tw"><table class="gx-t"><thead><tr><th>Hari, Tanggal</th><th>Kelas</th><th>Jam ke</th><th>Materi Pokok/TP</th><th>Kegiatan</th><th>Kehadiran (S;I;A)</th>' + (U.admin ? '<th>Guru</th>' : '') + '<th>Aksi</th></tr></thead><tbody>' +
-    rows.map(function (j) { var c = jAbs(j); return '<tr><td>' + fmtD(j.date) + '</td><td>' + E(j.kelas) + '</td><td>' + E(j.jamFrom) + '-' + E(j.jamTo) + '</td><td>' + E(j.materi) + '</td><td>' + E(j.kegiatan) + '</td><td title="' + E('S: ' + c.S.join(', ') + ' | I: ' + c.I.join(', ') + ' | A: ' + c.A.join(', ')) + '">' + c.S.length + ';' + c.I.length + ';' + c.A.length + '</td>' + (U.admin ? '<td>' + E(j.teacher) + '</td>' : '') +
+    '<div class="gx-tw"><table class="gx-t"><thead><tr><th>Hari, Tanggal</th><th>Kelas</th><th>Mapel</th><th>Jam ke</th><th>Materi Pokok/TP</th><th>Kegiatan</th><th>Kehadiran (S;I;A)</th>' + (U.admin ? '<th>Guru</th>' : '') + '<th>Aksi</th></tr></thead><tbody>' +
+    rows.map(function (j) { var c = jAbs(j); return '<tr><td>' + fmtD(j.date) + '</td><td>' + E(j.kelas) + '</td><td>' + (j.mapel ? E(j.mapel) : '<i style="color:#b45309">belum diisi</i>') + '</td><td>' + E(j.jamFrom) + '-' + E(j.jamTo) + '</td><td>' + E(j.materi) + '</td><td>' + E(j.kegiatan) + '</td><td title="' + E('S: ' + c.S.join(', ') + ' | I: ' + c.I.join(', ') + ' | A: ' + c.A.join(', ')) + '">' + c.S.length + ';' + c.I.length + ';' + c.A.length + '</td>' + (U.admin ? '<td>' + E(j.teacher) + '</td>' : '') +
       '<td style="white-space:nowrap"><button class="gx-b sm" data-a="edJ" data-id="' + j.id + '">Edit</button> <button class="gx-b r sm" data-a="delJ" data-id="' + j.id + '">Hapus</button></td></tr>'; }).join('') +
     '</tbody></table></div><p class="gx-muted">' + rows.length + ' jurnal. Arahkan kursor ke kolom kehadiran untuk melihat nama siswa.</p>');
 };
@@ -637,11 +650,14 @@ P.rekap = function () {
     ss.map(function (s, i) { var v = na(al, s.id); return '<tr data-q="' + E(s.name.toLowerCase()) + '"><td>' + (i + 1) + '</td><td>' + E(s.name) + '</td><td>' + E(s.nisn) + '</td>' + (all ? al.map(function (a) { var x = a.scores && a.scores[s.id]; return '<td>' + (hasV(x) ? E(x) : '-') + '</td>'; }).join('') : '') + '<td><b>' + (v == null ? '-' : v) + '</b></td><td>' + pred(v) + '</td><td class="cp" data-sid="' + E(s.id) + '">' + E(capai(al, s.id)) + '</td></tr>'; }).join('') + '</tbody></table></div>');
 };
 
+function xRec(k, n) { return list('extras').filter(function (x) { return x.kelas === k && x.name === n; }).sort(function (a, b) { return (b.updatedAt || 0) - (a.updatedAt || 0); })[0]; }
 function extraList(k) { return list('extras').filter(function (x) { return x.kelas === k; }).sort(function (a,b) { return a.name.localeCompare(b.name); }); }
 P.ekstra = function () {
   var ks = myKelas(); if (!ks.length) return noCls(); var k = ks.indexOf(st.xk) >= 0 ? st.xk : ks[0]; st.xk = k;
-  var al = extraList(k).filter(function (x) { return U.admin || x.teacher === U.name; }), x = al.filter(function (x) { return x.id === st.xid; })[0] || { name: '', mode: 'letter', scores: {}, notes: {} }; st.xid = x.id || '';
-  return card('Input Nilai Ekstrakurikuler', '<div class="gx-g">' + F('Kelas', '<select class="gx-in" data-c="xk">' + opt(ks,k) + '</select>') + F('Ekstrakurikuler', '<select class="gx-in" data-c="xid">' + opt(al.map(function(x) { return {v:x.id,l:x.name}; }),st.xid,'+ Ekstrakurikuler Baru') + '</select>') + F('Nama Ekstrakurikuler', '<input class="gx-in" id="x-name" value="' + E(x.name) + '">') + F('Jenis Nilai', '<select class="gx-in" id="x-mode">' + opt([{v:'letter',l:'Huruf A, B, C, D, F'},{v:'number',l:'Bilangan 0–100'}],x.mode) + '</select>') + F('Cari nama siswa', '<input class="gx-in" data-i="flt" data-t="gx-xt">') + '</div><div class="gx-row"><button class="gx-b" data-a="xSave">Simpan Nilai Ekstrakurikuler</button><button class="gx-b g" data-a="xXls">📗 Excel</button><button class="gx-b s" data-a="xPrint">🖨️ Print</button><button class="gx-b r" data-a="xPdf">📕 PDF</button>' + (x.id ? '<button class="gx-b r" data-a="xDel">Hapus Ekstrakurikuler</button>' : '') + '</div><div class="gx-tw"><table class="gx-t"><thead><tr><th>No</th><th>Nama Siswa</th><th>Nilai</th><th>Keterangan</th></tr></thead><tbody id="gx-xt">' + stuOf(k).map(function(s,i) { return '<tr data-sid="' + E(s.id) + '" data-q="' + E(s.name.toLowerCase()) + '"><td>' + (i+1) + '</td><td>' + E(s.name) + '</td><td><input class="gx-in num" data-f="score" value="' + E(hasV(x.scores[s.id]) ? x.scores[s.id] : '') + '"></td><td><input class="gx-in" data-f="note" value="' + E((x.notes || {})[s.id] || '') + '"></td></tr>'; }).join('') + '</tbody></table></div>');
+  var ns = exNames(), n = ns.indexOf(st.xn) >= 0 ? st.xn : (ns[0] || ''); st.xn = n;
+  if (!n) return card('Input Nilai Ekstrakurikuler', '<p class="gx-muted">Admin belum mengisi daftar ekstrakurikuler di menu Pengaturan Sekolah.</p>');
+  var x = xRec(k, n) || { name: n, mode: 'letter', scores: {}, notes: {} }; st.xid = x.id || '';
+  return card('Input Nilai Ekstrakurikuler', '<div class="gx-g">' + F('Kelas', '<select class="gx-in" data-c="xk">' + opt(ks,k) + '</select>') + F('Ekstrakurikuler', '<select class="gx-in" data-c="xn">' + opt(ns, n) + '</select>') + F('Jenis Nilai', '<select class="gx-in" id="x-mode">' + opt([{v:'letter',l:'Huruf A, B, C, D, F'},{v:'number',l:'Bilangan 0–100'}],x.mode) + '</select>') + F('Cari nama siswa', '<input class="gx-in" data-i="flt" data-t="gx-xt">') + '</div><div class="gx-row"><button class="gx-b" data-a="xSave">Simpan Nilai Ekstrakurikuler</button><button class="gx-b g" data-a="xXls">📗 Excel</button><button class="gx-b s" data-a="xPrint">🖨️ Print</button><button class="gx-b r" data-a="xPdf">📕 PDF</button>' + (x.id ? '<button class="gx-b r" data-a="xDel">Hapus Nilai Ekstrakurikuler</button>' : '') + '</div><div class="gx-tw"><table class="gx-t"><thead><tr><th>No</th><th>Nama Siswa</th><th>Nilai</th><th>Keterangan</th></tr></thead><tbody id="gx-xt">' + stuOf(k).map(function(s,i) { return '<tr data-sid="' + E(s.id) + '" data-q="' + E(s.name.toLowerCase()) + '"><td>' + (i+1) + '</td><td>' + E(s.name) + '</td><td><input class="gx-in num" data-f="score" value="' + E(hasV(x.scores[s.id]) ? x.scores[s.id] : '') + '"></td><td><input class="gx-in" data-f="note" value="' + E((x.notes || {})[s.id] || '') + '"></td></tr>'; }).join('') + '</tbody></table></div>');
 };
 function validExtra(v, mode) { return mode === 'letter' ? /^[ABCDF]$/.test(String(v).trim().toUpperCase()) : validScore(v); }
 
@@ -839,7 +855,7 @@ A.reg = async function () {
 };
 A.saveSet = function () {
   if (!cf2('Simpan perubahan pengaturan sekolah?')) return; var s = S();
-  s.school = val('s-sc'); s.head = val('s-hd'); s.headNip = val('s-np'); s.year = val('s-yr'); s.semester = val('s-sm'); s.city = val('s-ct'); s.apiKey = val('s-ak'); s.logoL = val('s-ll'); s.logoR = val('s-lr');
+  s.school = val('s-sc'); s.head = val('s-hd'); s.headNip = val('s-np'); s.year = val('s-yr'); s.semester = val('s-sm'); s.city = val('s-ct'); s.apiKey = val('s-ak'); s.apiKeyProj = GXR_FB.projectId; s.ekskul = val('s-ex').split('\n').map(function (x) { return x.trim(); }).filter(Boolean); s.logoL = val('s-ll'); s.logoR = val('s-lr');
   s.subjects = val('s-sj').split('\n').map(function (x) { return x.trim(); }).filter(Boolean); put('settings', s); fbInit(); render(); toast('Pengaturan disimpan', 'ok');
 };
 A.defSubj = function () { document.getElementById('s-sj').value = SUBJ.join('\n'); };
@@ -878,16 +894,17 @@ A.delT = function (el) { var t = D.teachers[el.getAttribute('data-id')]; if (cf2
 A.saveJ = function () {
   var j = st.editJ ? D.journals[st.editJ] : null; if (j && !cf2('Simpan perubahan jurnal ini?')) return;
   var abs = {}; qa('#gx-pt tr').forEach(function (r) { var c = r.querySelector('.gx-ab:checked'); if (c) abs[r.getAttribute('data-sid')] = c.value; });
-  var o = j || { id: uid(), teacher: U.name, kelas: st.pk }; o.date = val('p-d'); o.jamFrom = val('p-j1'); o.jamTo = val('p-j2'); o.materi = val('p-m'); o.kegiatan = val('p-g'); o.abs = abs;
+  var o = j ? Object.assign({}, j) : { id: uid(), teacher: U.name, kelas: st.pk }; o.mapel = val('p-mp'); if (!o.mapel) return toast('Mata pelajaran wajib dipilih', 'err'); o.date = val('p-d'); o.jamFrom = val('p-j1'); o.jamTo = val('p-j2'); o.materi = val('p-m'); o.kegiatan = val('p-g'); o.abs = abs;
   if (+o.jamTo < +o.jamFrom) return toast('Jam sampai tidak boleh lebih kecil', 'err'); if (!o.date || !o.materi) return toast('Tanggal dan materi wajib diisi', 'err');
-  put('journals', o); toast('Jurnal & presensi tersimpan', 'ok'); st.editJ = null; if (j) go('jurnal'); else render();
+  if (j && bkey('journals', j) !== bkey('journals', o)) { rm('journals', j.id); o.id = uid(); }
+  put('journals', o); toast('Jurnal & presensi tersimpan', 'ok'); st.editJ = null; if (j) st.pm = null; if (j) go('jurnal'); else render();
 };
-A.cancelJ = function () { st.editJ = null; go('jurnal'); };
-A.edJ = function (el) { st.editJ = el.getAttribute('data-id'); go('presensi'); };
+A.cancelJ = function () { st.editJ = null; st.pm = null; go('jurnal'); };
+A.edJ = function (el) { st.editJ = el.getAttribute('data-id'); st.pm = null; go('presensi'); };
 A.delJ = function (el) { if (cf2('Hapus jurnal ini?')) { rm('journals', el.getAttribute('data-id')); render(); } };
 A.jRef = function () { st.jk = val('j-k'); st.jf = val('j-f'); st.jt = val('j-t'); render(); };
-function jRows() { return jFilter().map(function (j) { var c = jAbs(j); return [fmtD(j.date), j.kelas, j.jamFrom + '-' + j.jamTo, j.materi, j.kegiatan, c.S.join(', ') || '0', c.I.join(', ') || '0', c.A.join(', ') || '0', j.teacher]; }); }
-var JHEAD = ['Hari, Tanggal', 'Kelas', 'Jam ke', 'Materi Pokok/TP', 'Kegiatan Pembelajaran', 'Sakit', 'Izin', 'Alpa', 'Guru'];
+function jRows() { return jFilter().map(function (j) { var c = jAbs(j); return [fmtD(j.date), j.kelas, j.mapel || '-', j.jamFrom + '-' + j.jamTo, j.materi, j.kegiatan, c.S.join(', ') || '0', c.I.join(', ') || '0', c.A.join(', ') || '0', j.teacher]; }); }
+var JHEAD = ['Hari, Tanggal', 'Kelas', 'Mata Pelajaran', 'Jam ke', 'Materi Pokok/TP', 'Kegiatan Pembelajaran', 'Sakit', 'Izin', 'Alpa', 'Guru'];
 A.jXls = function () { A.jRef(); xls('Jurnal_Mengajar', JHEAD, jRows(), 'Jurnal Mengajar - ' + U.name); };
 A.jPrint = function () { A.jRef(); printTab('Jurnal Mengajar - ' + U.name, JHEAD, jRows()); };
 A.jPdf = function () { A.jRef(); pdfTab('Jurnal_Mengajar', 'Jurnal Mengajar - ' + U.name, JHEAD, jRows()); };
@@ -916,16 +933,16 @@ A.nSave = function () {
   saveTpChoices(); o.scores = sc; put('assess', o); st.na = o.id; render(); toast('Penilaian tersimpan', 'ok');
 };
 A.xSave = function () {
-  if (!val('x-name')) return toast('Nama ekstrakurikuler wajib diisi', 'err'); var mode = val('x-mode'), scores = {}, notes = {}, bad;
+  if (!st.xn) return toast('Pilih ekstrakurikuler', 'err'); var mode = val('x-mode'), scores = {}, notes = {}, bad;
   qa('#gx-xt tr').forEach(function(r) { var i = r.querySelector('[data-f="score"]'), v = i.value.trim(), id = r.getAttribute('data-sid'); i.setAttribute('aria-invalid',v && !validExtra(v,mode) ? 'true' : 'false'); if (v && !validExtra(v,mode)) bad = bad || i; else if (v) scores[id] = mode === 'letter' ? v.toUpperCase() : scoreNum(v); notes[id] = r.querySelector('[data-f="note"]').value.trim(); });
   if (bad) { bad.focus(); return toast(mode === 'letter' ? 'Nilai harus A, B, C, D, atau F.' : 'Nilai harus angka 0–100.', 'err'); }
   var old = st.xid && D.extras[st.xid]; if (old && !cf2('Simpan perubahan nilai ekstrakurikuler?')) return;
-  var x = Object.assign({},old || {id:uid(),teacher:U.name,kelas:st.xk}); x.name = val('x-name'); x.mode = mode; x.scores = scores; x.notes = notes; put('extras',x); st.xid = x.id; render(); toast('Nilai ekstrakurikuler tersimpan','ok');
+  var x = Object.assign({},old || {id:sid('x_' + st.xk + '_' + st.xn),teacher:U.name,kelas:st.xk}); x.name = st.xn; x.mode = mode; x.scores = scores; x.notes = notes; put('extras',x); st.xid = x.id; render(); toast('Nilai ekstrakurikuler tersimpan','ok');
 };
 A.xDel = function () { if (cf2('Hapus nilai ekstrakurikuler ini?')) { rm('extras',st.xid); st.xid = ''; render(); } };
 var XHEAD = ['No', 'Nama Siswa', 'NISN', 'Nilai', 'Keterangan'];
 function xRows() { var x = D.extras[st.xid] || { scores: {}, notes: {} }; return stuOf(st.xk).map(function (s, i) { return [i + 1, s.name, s.nisn, hasV(x.scores[s.id]) ? x.scores[s.id] : '', (x.notes || {})[s.id] || '']; }); }
-function xTitle() { var x = D.extras[st.xid]; return 'Ekstrakurikuler ' + (x ? x.name : '(baru)') + ' - Kelas ' + st.xk; }
+function xTitle() { var x = D.extras[st.xid]; return 'Ekstrakurikuler ' + (x ? x.name : st.xn) + ' - Kelas ' + st.xk; }
 A.xXls = function () { xls('Ekstra_' + st.xk, XHEAD, xRows(), xTitle()); };
 A.xPrint = function () { printTab(xTitle(), XHEAD, xRows()); };
 A.xPdf = function () { pdfTab('Ekstra_' + st.xk, xTitle(), XHEAD, xRows()); };
@@ -1074,8 +1091,8 @@ A.mergeRs = function () {
 };
 var C = {
   tpPick: function(e) { st.tpDraft = st.tpDraft || {}; st.tpDraft[e.value] = e.checked; if (st.page === 'nilai') nStat(); else { var r = rekapData(); qa('#gx-rt .cp').forEach(function(td) { td.textContent = capai(r.al,td.getAttribute('data-sid')); }); } },
-  xk: function(e) { st.xk = e.value; st.xid = ''; render(); }, xid: function(e) { st.xid = e.value; render(); },
-  ek: function (e) { st.ek = e.value; render(); }, pk: function (e) { st.pk = e.value; render(); }, hk: function (e) { st.hk = e.value; st.hSource = null; render(); },
+  xk: function(e) { st.xk = e.value; st.xid = ''; render(); }, xid: function(e) { st.xid = e.value; render(); }, xn: function(e) { st.xn = e.value; st.xid = ''; render(); },
+  ek: function (e) { st.ek = e.value; render(); }, pk: function (e) { st.pk = e.value; st.pm = null; render(); }, pm: function (e) { st.pm = e.value; }, hk: function (e) { st.hk = e.value; st.hSource = null; render(); },
   nk: function (e) { st.nk = e.value; st.na = ''; st.nm = ''; render(); }, nm: function (e) { st.nm = e.value; st.na = ''; render(); }, na: function (e) { st.na = e.value; render(); },
   rk: function (e) { st.rk = e.value; render(); }, rm: function (e) { st.rm = e.value; render(); }, rall: function (e) { st.rall = e.checked; render(); },
   kk: function (e) { st.kk = e.value; render(); }, ksrc: function (e) { st.ksrc = e.value; render(); }, kkm: function (e) { st.kkm = +e.value || 0; render(); }, kmx: function (e) { st.kmx = +e.value || 100; render(); }, kmd: function (e) { st.kmd = e.value; render(); },
